@@ -223,8 +223,8 @@
         car.setLatLng(route[i]);
         const nearbyLandmark = landmarks.find(l =>
           !l.shown &&
-          Math.abs(l.coords[0] - route[i][0]) < 0.0009 &&
-          Math.abs(l.coords[1] - route[i][1]) < 0.0009
+          Math.abs(l.coords[0] - route[i][0]) < 0.001 &&
+          Math.abs(l.coords[1] - route[i][1]) < 0.001
         );
         if (nearbyLandmark) {
           document.getElementById("remark-box").innerText = nearbyLandmark.remark;
