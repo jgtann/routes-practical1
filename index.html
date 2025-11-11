@@ -79,6 +79,9 @@
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
+    // -----------------------------
+    // ROUTE COORDINATES (with notes)
+    // -----------------------------
     const route = [
       [1.2927, 103.8490], // Coleman St 1
       [1.2928, 103.8494], // Coleman St 2
@@ -174,6 +177,9 @@
 
     const polyline = L.polyline(route, { color: 'blue', weight: 5 }).addTo(map);
 
+    // -----------------------------
+    // LANDMARKS
+    // -----------------------------
     const landmarks = [
       { name: "Central Fire Station", coords: [1.2922, 103.8492], remark: "Coleman St. (Right) Central Fire Station; (Left) Armenian Church" },
       { name: "Armenian Church", coords: [1.2930, 103.8495], remark: "Hill St. (Left) Armenian Church!" },
@@ -195,8 +201,11 @@
       { name: "Thian Hock Keng Temple", coords: [1.2819, 103.8480], remark: "Arrived at Thian Hock Keng Temple!" }
     ];
 
-    landmarks.forEach(lm => { L.marker(lm.coords).addTo(map).bindPopup(lm.name); });
+    landmarks.forEach(lm => L.marker(lm.coords).addTo(map).bindPopup(lm.name));
 
+    // -----------------------------
+    // CAR MARKER + MOVEMENT
+    // -----------------------------
     const carIcon = L.icon({
       iconUrl: 'https://cdn-icons-png.flaticon.com/512/854/854894.png',
       iconSize: [35, 35]
@@ -207,32 +216,65 @@
     let running = false;
     let timer;
 
-function moveCar() {
-  if (!running) return;
-  if (i < route.length) {
-    car.setLatLng(route[i]);
-
-    const nearbyLandmark = landmarks.find(l =>
-      !l.shown && // 👈 only consider landmarks not yet shown
-      Math.abs(l.coords[0] - route[i][0]) < 0.0009 &&
-      Math.abs(l.coords[1] - route[i][1]) < 0.0009
-    );
-
-    if (nearbyLandmark) {
-      document.getElementById("remark-box").innerText = nearbyLandmark.remark;
-      nearbyLandmark.shown = true; // 👈 mark as already displayed
-    } else {
-      document.getElementById("remark-box").innerText = "Moving to next point...";
+    function moveCar() {
+      if (!running) return;
+      if (i < route.length) {
+        car.setLatLng(route[i]);
+        const nearbyLandmark = landmarks.find(l =>
+          !l.shown &&
+          Math.abs(l.coords[0] - route[i][0]) < 0.0009 &&
+          Math.abs(l.coords[1] - route[i][1]) < 0.0009
+        );
+        if (nearbyLandmark) {
+          document.getElementById("remark-box").innerText = nearbyLandmark.remark;
+          nearbyLandmark.shown = true;
+        } else {
+          document.getElementById("remark-box").innerText = "Moving to next point...";
+        }
+        i++;
+        timer = setTimeout(moveCar, 1500);
+      } else {
+        document.getElementById("remark-box").innerText = "🏁 Route completed!";
+        document.getElementById("startBtn").disabled = false;
+        document.getElementById("stopBtn").disabled = true;
+      }
     }
 
-    i++;
-    timer = setTimeout(moveCar, 1500);
-  } else {
-    document.getElementById("remark-box").innerText = "🏁 Route completed!";
-    document.getElementById("startBtn").disabled = false;
-    document.getElementById("stopBtn").disabled = true;
-  }
-    };
+    // -----------------------------
+    // BUTTON LOGIC
+    // -----------------------------
+    document.getElementById("startBtn").addEventListener("click", () => {
+      if (!running) {
+        landmarks.forEach(l => delete l.shown);
+        running = true;
+        document.getElementById("startBtn").disabled = true;
+        document.getElementById("stopBtn").disabled = false;
+        moveCar();
+      }
+    });
+
+    document.getElementById("stopBtn").addEventListener("click", () => {
+      running = false;
+      clearTimeout(timer);
+      document.getElementById("startBtn").disabled = false;
+      document.getElementById("stopBtn").disabled = true;
+      document.getElementById("remark-box").innerText = "⏹ Route paused.";
+    });
+
+    document.getElementById("prevBtn").addEventListener("click", () => {
+      if (i > 1) {
+        i -= 2;
+        car.setLatLng(route[i]);
+        const nearbyLandmark = landmarks.find(l =>
+          Math.abs(l.coords[0] - route[i][0]) < 0.0009 &&
+          Math.abs(l.coords[1] - route[i][1]) < 0.0009
+        );
+        document.getElementById("remark-box").innerText =
+          nearbyLandmark ? nearbyLandmark.remark : "Moved to previous point.";
+      } else {
+        document.getElementById("remark-box").innerText = "Already at start point.";
+      }
+    });
   </script>
 </body>
 </html>
