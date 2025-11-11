@@ -206,56 +206,32 @@
     let running = false;
     let timer;
 
-    function moveCar() {
-      if (!running) return;
-      if (i < route.length) {
-        car.setLatLng(route[i]);
-        const nearbyLandmark = landmarks.find(l =>
-          Math.abs(l.coords[0] - route[i][0]) < 0.0009 &&
-          Math.abs(l.coords[1] - route[i][1]) < 0.0009
-        );
-        document.getElementById("remark-box").innerText =
-          nearbyLandmark ? nearbyLandmark.remark : "Moving to next point...";
-        i++;
-        timer = setTimeout(moveCar, 1500);
-      } else {
-        document.getElementById("remark-box").innerText = "🏁 Route completed!";
-        document.getElementById("startBtn").disabled = false;
-        document.getElementById("stopBtn").disabled = true;
-      }
+function moveCar() {
+  if (!running) return;
+  if (i < route.length) {
+    car.setLatLng(route[i]);
+
+    const nearbyLandmark = landmarks.find(l =>
+      !l.shown && // 👈 only consider landmarks not yet shown
+      Math.abs(l.coords[0] - route[i][0]) < 0.0009 &&
+      Math.abs(l.coords[1] - route[i][1]) < 0.0009
+    );
+
+    if (nearbyLandmark) {
+      document.getElementById("remark-box").innerText = nearbyLandmark.remark;
+      nearbyLandmark.shown = true; // 👈 mark as already displayed
+    } else {
+      document.getElementById("remark-box").innerText = "Moving to next point...";
     }
 
-    document.getElementById("startBtn").addEventListener("click", () => {
-      if (!running) {
-        running = true;
-        document.getElementById("startBtn").disabled = true;
-        document.getElementById("stopBtn").disabled = false;
-        moveCar();
-      }
-    });
-
-    document.getElementById("stopBtn").addEventListener("click", () => {
-      running = false;
-      clearTimeout(timer);
-      document.getElementById("startBtn").disabled = false;
-      document.getElementById("stopBtn").disabled = true;
-      document.getElementById("remark-box").innerText = "⏹ Route paused.";
-    });
-
-    document.getElementById("prevBtn").addEventListener("click", () => {
-      if (i > 1) {
-        i -= 2; // move back one step (since moveCar increments)
-        car.setLatLng(route[i]);
-        const nearbyLandmark = landmarks.find(l =>
-          Math.abs(l.coords[0] - route[i][0]) < 0.0009 &&
-          Math.abs(l.coords[1] - route[i][1]) < 0.0009
-        );
-        document.getElementById("remark-box").innerText =
-          nearbyLandmark ? nearbyLandmark.remark : "Moved to previous point.";
-      } else {
-        document.getElementById("remark-box").innerText = "Already at start point.";
-      }
-    });
+    i++;
+    timer = setTimeout(moveCar, 1500);
+  } else {
+    document.getElementById("remark-box").innerText = "🏁 Route completed!";
+    document.getElementById("startBtn").disabled = false;
+    document.getElementById("stopBtn").disabled = true;
+  }
+    };
   </script>
 </body>
 </html>
