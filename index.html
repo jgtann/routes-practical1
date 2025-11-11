@@ -69,6 +69,7 @@
   <div class="controls">
     <button id="startBtn">▶ Start</button>
     <button id="stopBtn" disabled>⏹ Stop</button>
+    <button id="prevBtn">⏪ Previous</button>
   </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -88,17 +89,10 @@
       [1.2939, 103.8502], // Hill St 4
       [1.2943, 103.8505], // Hill St 5
       [1.2946, 103.8506], // Victoria St 1
-      // [1.294850, 103.850701], // Victoria St 2
-      // [1.295045, 103.850957], // Victoria St 3
       [1.2957, 103.8515], // Victoria St 4
-      //[1.2959, 103.8517], // Victoria St 5
       [1.2978, 103.8533], // Victoria St 6
-      //[1.2978, 103.8534], // Victoria St 7
-      //[1.2980, 103.8535], // Victoria St 8
       [1.2985, 103.8540], // Victoria St 9
       [1.2984, 103.8542], // Victoria St 12 / Middle Rd 1
-      //[1.2983, 103.8543], // Middle Rd 2
-      //[1.2981, 103.8545], // Middle Rd 3
       [1.2980, 103.8547], // Middle Rd 4
       [1.2978, 103.8549], // Middle Rd 5
       [1.2976, 103.8550], // Middle Rd 7
@@ -182,7 +176,6 @@
 
     const landmarks = [
       { name: "Central Fire Station", coords: [1.2922, 103.8492], remark: "Coleman St. (Right) Central Fire Station; (Left) Armenian Church" },
-
       { name: "Armenian Church", coords: [1.2930, 103.8495], remark: "Hill St. (Left) Armenian Church!" },
       { name: "Singapore Chinese Chamber of Commerce", coords: [1.2933, 103.8501], remark: "Hill St. (Right) Singapore Chinese Chamber of Commerce"},
       { name: "Kempinski Hotel", coords: [1.2941, 103.8508], remark: "Hill St. (Right) Kempinski Hotel!" },
@@ -198,7 +191,6 @@
       { name: "Singapore Recreation Club", coords: [1.2921, 103.8536], remark: "St Andrew's Rd. (Right) Singapore Recreation Club!"},
       { name: "Civilian War Memorial", coords: [1.2928, 103.8546], remark: "Beach Rd. (Right) Civilian War Memorial!"},
       { name: "Raffles Hotel", coords: [1.2949, 103.8544], remark: "Beach Rd. (Left) Passing Raffles Hotel again!"},
-
       { name: "Thian Hock Keng Temple", coords: [1.2819, 103.8480], remark: "Arrived at Thian Hock Keng Temple!" }
     ];
 
@@ -248,6 +240,21 @@
       document.getElementById("startBtn").disabled = false;
       document.getElementById("stopBtn").disabled = true;
       document.getElementById("remark-box").innerText = "⏹ Route paused.";
+    });
+
+    document.getElementById("prevBtn").addEventListener("click", () => {
+      if (i > 1) {
+        i -= 2; // move back one step (since moveCar increments)
+        car.setLatLng(route[i]);
+        const nearbyLandmark = landmarks.find(l =>
+          Math.abs(l.coords[0] - route[i][0]) < 0.0009 &&
+          Math.abs(l.coords[1] - route[i][1]) < 0.0009
+        );
+        document.getElementById("remark-box").innerText =
+          nearbyLandmark ? nearbyLandmark.remark : "Moved to previous point.";
+      } else {
+        document.getElementById("remark-box").innerText = "Already at start point.";
+      }
     });
   </script>
 </body>
