@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Route 1.1</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Poppins, sans-serif;
+      background: #f0f8ff;
+      text-align: center;
+    }
+    h2 {
+      margin: 12px;
+      font-size: 1.2em;
+    }
+    #map {
+      height: 65vh;
+      width: 95%;
+      border-radius: 12px;
+      margin: 5px auto;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    #remark-box {
+      font-size: 1em;
+      margin-top: 8px;
+      padding: 10px;
+      background: #fff8dc;
+      border-radius: 8px;
+      width: 90%;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .controls {
+      margin-top: 10px;
+    }
+    button {
+      padding: 8px 18px;
+      font-size: 1em;
+      margin: 5px;
+      border: none;
+      border-radius: 6px;
+      background-color: #0077b6;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    button:hover {
+      background-color: #005f87;
+    }
+    button:disabled {
+      background-color: #a0c4ff;
+      cursor: not-allowed;
+    }
+    @media (min-width: 768px) {
+      h2 { font-size: 1.5em; }
+      #map { height: 75vh; width: 90%; }
+      #remark-box { font-size: 1.1em; width: 80%; }
+    }
+  </style>
+</head>
+<a href="index.html"
+   style="display:inline-block;margin:10px;padding:8px 14px;background:#0077b6;color:#fff;
+          border-radius:6px;text-decoration:none;font-weight:500;">
+  ⬅ Back to Home
+</a>
+
+<body>
+  <h2>🚗 Singapore Route Tracker</h2>
+  <div id="map"></div>
+  <div id="remark-box">Start of the route...</div>
+  <div class="controls">
+    <button id="startBtn">▶ Start</button>
+    <button id="stopBtn" disabled>⏹ Stop</button>
+    <button id="prevBtn">⏪ Previous</button>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([1.290270, 103.851959], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // -----------------------------
+    // ROUTE COORDINATES (with notes)
+    // -----------------------------
+    const route = [
+      [1.2809237531476467, 103.84772308757975], // Telok Ayer St 1 / Thian Hock Keng Temple
+      [1.280556382311, 103.84753130963628], // Telok Ayer St 2
+      [1.2800911352287887, 103.84730600407863], // Telok Ayer St 3
+      [1.279857841275584, 103.84719871571723], // Telok Ayer St 4
+      [1.2797559427542893, 103.8470793574159], // Telok Ayert St 5 / Amoy St 1
+      [1.279839070492907, 103.84686209848597], // Amoy St 2
+      [1.2800401859725303, 103.84670250704836], // Amoyt St 3
+      [1.2804786667087158, 103.84687330386893], // Amoy St 4
+      [1.2810193384837059, 103.84714076229598], // Amoy St 5
+      [1.2816334107669611, 103.84749481388512], // Amoy St 6
+      [1.28235206283833, 103.84792933174884], // Amoy St 7
+
+      [1.2825102735500917, 103.84801248022535], // Amoy St 8 / Cross St 1
+      [1.2827382041881337, 103.84760478445199], // Cross St 2
+      [1.2831723096502492, 103.84686224079424], // Cross St 3
+      [1.2836091360851134, 103.84621016680057], // Cross St 4
+      [1.2842493340347951, 103.84510428162625], // Upper Cross St 1
+      [1.2865868025548797, 103.84521926453954], // Upper Cross St 2 / Eu Tong Sen St 1
+      [1.2872947271051387, 103.84582544378152], // Eu Tong Sen St 2
+      [1.2873022799648421, 103.84585763028599], // Eu Tong Sen St 3
+      [1.2879029430716329, 103.84635383895534], // Eu Tong Sen St 4
+      [1.28835880337836, 103.8467588525155], // Eu Tong Sen St 5
+      [1.289232614275258, 103.84746421038592], // Eu Tong Sen St 6
+      [1.2896149859503454, 103.84776367518376], // Eu Tong Sen St 7 / Coleman Bridge
+      [1.289799941798337, 103.84791199632996], // Coleman Bridge
+      [1.2899996107885479, 103.84807972810025], // Coleman Bridge end
+      [1.2908776188971924, 103.84868639623232], // Hill St 1
+      [1.2923365250778196, 103.84943688154169], // Hill St 2
+      [1.2936130777105002, 103.84999608930715], // Hill St 3
+      [1.2944309779998084, 103.85048571510042], // Hill St 4 / Victoria St 1
+      [1.2948076663761237, 103.85072947110777], // Victoria St 2
+      [1.2959742997694592, 103.85179441281011], // Victoria St 3
+      [1.296515427077307, 103.85232826172465], // Victoria St 4
+      [1.2968992328944737, 103.85266868965019], // Victoria St 5
+      [1.297673780572257, 103.85329674346436], // Victoria St 6
+      [1.2984251869349277, 103.85388838134003], // Victoria St 7
+
+      [1.29869245094337, 103.85373937624408], // Middle Rd 1
+      [1.299075465281629, 103.85329436418576], // Middle Rd 2
+      [1.2997069018820073, 103.85251577913701], // Middle Rd 3
+      [1.3009359312082351, 103.85089579749119], // Middle Rd 4 / NAFA
+      [1.3014936868058822, 103.85015550779744], // Middle Rd 5 / turning to Selegie Rd
+      [1.3018101057920066, 103.8500160329276], // Selegie Rd 1
+      [1.3027755744861385, 103.85004047508748], // Selegie Rd 2
+      [1.3033368253439588, 103.85007840724977], // Selegie Rd 3
+      [1.3046072237420665, 103.85050324748381], // Selegie Rd 4
+      [1.3051002139865446, 103.8508787759069], // Selegie Rd 5 / Sungei Rd 1
+      [1.3048650955743026, 103.85121257894964], // Sungei Rd 2
+      [1.304720179698739, 103.8514325678856], // Sungei Rd 3
+      [1.3047846476563814, 103.85159567619057], // Clive St 1
+      [1.3051342530781134, 103.85187494131259], // Clive St 2
+      [1.3053371918132015, 103.85215461834413], // Clive St 3 / Little India Arcade
+      [1.3054630605341935, 103.85232245106917], // Clive St 4 / Indian Heritage Centre
+
+
+    ];
+
+    const polyline = L.polyline(route, { color: 'blue', weight: 5 }).addTo(map);
+
+    // -----------------------------
+    // LANDMARKS
+    // -----------------------------
+    const landmarks = [
+      { name: "Harmony in Diversity Gallery", coords: [1.2796781780954223, 103.84689830830601], remark: "Amoy St. (Left) Harmony in Diversity Gallery" },
+      { name: "Siang Cho Kong Temple", coords: [1.2798471151123931, 103.84662204077732], remark: "Amoy St. (Left) Siang Cho Kong Temple"},
+      { name: "Sook Ching Inspection Centre", coords: [1.2840262851370199, 103.84636189545638], remark: "Cross St. (Right) Sook Ching Inspection Centre"},
+      { name: "Hong Lim Park / Speaker's Corner", coords: [1.2867257504987055, 103.84573424867432], remark: "Eu Tong Sen St. (Right) Hong Lim Park / Speaker's Corner"},
+      { name: "Chinatown View Overhead Bridge", coords: [1.2889510536122653, 103.84716916739205], remark: "Eu Tong Sen St. (Top) Chinatown View Overhead Bridge"},
+      { name: "Old Hill St. Police Station", coords: [1.2909593241007833, 103.84828202056978], remark: "Eu Tong Sen St. (Ahead) Old Hill St. Police Station"},
+      { name: "Singapore Management University (SMU)", coords: [1.2953328760033045, 103.85053423408635], remark: "Victoria St. (Left) Singapore Management University (SMU)"},
+      { name: "CHIJMES", coords: [1.295334344360328, 103.8519256455288], remark: "Victoria St. (Right) CHIJMES"},
+      { name: "Cathedral of the Good Shepherd", coords: [1.2959523928610526, 103.85138684004768], remark: "Victoria St. (Left) Cathedral of the Good Shepherd"},
+      { name: "National Design Centre", coords: [1.2984952889726529, 103.85357941489109], remark: "Victoria St / Middle Road. (Left) National Design Centre"},
+      { name: "Nanyang Academy of Fine Arts (NAFA)", coords: [1.3000885715066572, 103.85179165530897], remark: "Middle Rd. (Left) Nanyang Academy of Fine Arts (NAFA)"},
+      { name: "Tekka Place", coords: [1.3050926295219747, 103.85141361941857], remark: "Selegie Rd. (Ahead) Tekka Place"},
+      { name: "Indian Heritage Centre", coords: [1.3057475789552717, 103.85216589564395], remark: "Clive St. (Left) Indian Heritage Centre"},
+    
+
+
+    ];
+
+    landmarks.forEach(lm => L.marker(lm.coords).addTo(map).bindPopup(lm.name));
+
+    // -----------------------------
+    // CAR MARKER + MOVEMENT
+    // -----------------------------
+    const carIcon = L.icon({
+      iconUrl: 'https://cdn-icons-png.flaticon.com/512/854/854894.png',
+      iconSize: [35, 35]
+    });
+    const car = L.marker(route[0], { icon: carIcon }).addTo(map);
+
+    let i = 0;
+    let running = false;
+    let timer;
+
+    function moveCar() {
+      if (!running) return;
+      if (i < route.length) {
+        car.setLatLng(route[i]);
+        const nearbyLandmark = landmarks.find(l =>
+          !l.shown &&
+          Math.abs(l.coords[0] - route[i][0]) < 0.0008 &&
+          Math.abs(l.coords[1] - route[i][1]) < 0.0008
+        );
+        if (nearbyLandmark) {
+          document.getElementById("remark-box").innerText = nearbyLandmark.remark;
+          nearbyLandmark.shown = true;
+        } else {
+          document.getElementById("remark-box").innerText = "Moving to next point...";
+        }
+        i++;
+        timer = setTimeout(moveCar, 1500);
+      } else {
+        document.getElementById("remark-box").innerText = "🏁 Route completed!";
+        document.getElementById("startBtn").disabled = false;
+        document.getElementById("stopBtn").disabled = true;
+      }
+    }
+
+    // -----------------------------
+    // BUTTON LOGIC
+    // -----------------------------
+    document.getElementById("startBtn").addEventListener("click", () => {
+      if (!running) {
+        landmarks.forEach(l => delete l.shown);
+        running = true;
+        document.getElementById("startBtn").disabled = true;
+        document.getElementById("stopBtn").disabled = false;
+        moveCar();
+      }
+    });
+
+    document.getElementById("stopBtn").addEventListener("click", () => {
+      running = false;
+      clearTimeout(timer);
+      document.getElementById("startBtn").disabled = false;
+      document.getElementById("stopBtn").disabled = true;
+      document.getElementById("remark-box").innerText = "⏹ Route paused.";
+    });
+
+    document.getElementById("prevBtn").addEventListener("click", () => {
+      if (i > 1) {
+        i -= 2;
+        car.setLatLng(route[i]);
+        const nearbyLandmark = landmarks.find(l =>
+          Math.abs(l.coords[0] - route[i][0]) < 0.0009 &&
+          Math.abs(l.coords[1] - route[i][1]) < 0.0009
+        );
+        document.getElementById("remark-box").innerText =
+          nearbyLandmark ? nearbyLandmark.remark : "Moved to previous point.";
+      } else {
+        document.getElementById("remark-box").innerText = "Already at start point.";
+      }
+    });
+  </script>
+</body>
+</html>
