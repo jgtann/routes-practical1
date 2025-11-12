@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Route 1.3</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Poppins, sans-serif;
+      background: #f0f8ff;
+      text-align: center;
+    }
+    h2 {
+      margin: 12px;
+      font-size: 1.2em;
+    }
+    #map {
+      height: 65vh;
+      width: 95%;
+      border-radius: 12px;
+      margin: 5px auto;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    #remark-box {
+      font-size: 1em;
+      margin-top: 8px;
+      padding: 10px;
+      background: #fff8dc;
+      border-radius: 8px;
+      width: 90%;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .controls {
+      margin-top: 10px;
+    }
+    button {
+      padding: 8px 18px;
+      font-size: 1em;
+      margin: 5px;
+      border: none;
+      border-radius: 6px;
+      background-color: #0077b6;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    button:hover {
+      background-color: #005f87;
+    }
+    button:disabled {
+      background-color: #a0c4ff;
+      cursor: not-allowed;
+    }
+    @media (min-width: 768px) {
+      h2 { font-size: 1.5em; }
+      #map { height: 75vh; width: 90%; }
+      #remark-box { font-size: 1.1em; width: 80%; }
+    }
+  </style>
+</head>
+<a href="index.html"
+   style="display:inline-block;margin:10px;padding:8px 14px;background:#0077b6;color:#fff;
+          border-radius:6px;text-decoration:none;font-weight:500;">
+  ⬅ Back to Home
+</a>
+
+<body>
+  <h2>🚗 Singapore Route Tracker</h2>
+  <div id="map"></div>
+  <div id="remark-box">Start of the route...</div>
+  <div class="controls">
+    <button id="startBtn">▶ Start</button>
+    <button id="stopBtn" disabled>⏹ Stop</button>
+    <button id="prevBtn">⏪ Previous</button>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([1.290270, 103.851959], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // -----------------------------
+    // ROUTE COORDINATES (with notes)
+    // -----------------------------
+    const route = [
+      [1.3051653703217, 103.8519412328231], // Clive St 1 / Indian Heritage Centre
+      [1.3057835040910473, 103.85269039306107], // Clive St 2 / Dunlop St 1
+      [1.3056204825114206, 103.85289793164904], // Dunlop St 2
+      [1.3051445467938538, 103.85339368993412], // Dunlop St 3
+      [1.304625940874931, 103.853968244238], // Dunlop St 4
+      [1.3041762634859222, 103.85446728568228], // Dunlop St 5 / Jln Besar
+      [1.30382365109842, 103.85428265998242], // Jln Besar
+      [1.3033107213525037, 103.85390889043751], // Jln Besar / Rochor Canal Rd 1
+      [1.3034721594540395, 103.85406882615692], // Jln Besar / Rochor Canal Rd / Ophir Rd 1
+      [1.3030772402886157, 103.8554805489644], // Ophir Rd 2
+      [1.3025619972074463, 103.85620676105758], // Ophir Rd 3
+      [1.3014376384275792, 103.85776662337886], // Ophir Rd 4
+      [1.3006445035460379, 103.85864598754233], // Ophir Rd 5
+      [1.2998609242724617, 103.85939153542857], // Ophir Rd 6 / Beach Rd 1
+      [1.3004519733798403, 103.86012296004768], // Beach Rd 2
+      [1.3010666871426557, 103.86102718391055], // Beach Rd 3 / Sultan Gate 1
+
+
+    ];
+
+    const polyline = L.polyline(route, { color: 'blue', weight: 5 }).addTo(map);
+
+    // -----------------------------
+    // LANDMARKS
+    // -----------------------------
+    const landmarks = [
+      { name: "Raffles Hospital", coords: [1.3012417436935717, 103.85731260383275], remark: "Ophir Rd. (Left) Raffles Hospital" },
+
+    
+
+
+    ];
+
+    landmarks.forEach(lm => L.marker(lm.coords).addTo(map).bindPopup(lm.name));
+
+    // -----------------------------
+    // CAR MARKER + MOVEMENT
+    // -----------------------------
+    const carIcon = L.icon({
+      iconUrl: 'https://cdn-icons-png.flaticon.com/512/854/854894.png',
+      iconSize: [35, 35]
+    });
+    const car = L.marker(route[0], { icon: carIcon }).addTo(map);
+
+    let i = 0;
+    let running = false;
+    let timer;
+
+    function moveCar() {
+      if (!running) return;
+      if (i < route.length) {
+        car.setLatLng(route[i]);
+        const nearbyLandmark = landmarks.find(l =>
+          !l.shown &&
+          Math.abs(l.coords[0] - route[i][0]) < 0.0008 &&
+          Math.abs(l.coords[1] - route[i][1]) < 0.0008
+        );
+        if (nearbyLandmark) {
+          document.getElementById("remark-box").innerText = nearbyLandmark.remark;
+          nearbyLandmark.shown = true;
+        } else {
+          document.getElementById("remark-box").innerText = "Moving to next point...";
+        }
+        i++;
+        timer = setTimeout(moveCar, 1500);
+      } else {
+        document.getElementById("remark-box").innerText = "🏁 Route completed!";
+        document.getElementById("startBtn").disabled = false;
+        document.getElementById("stopBtn").disabled = true;
+      }
+    }
+
+    // -----------------------------
+    // BUTTON LOGIC
+    // -----------------------------
+    document.getElementById("startBtn").addEventListener("click", () => {
+      if (!running) {
+        landmarks.forEach(l => delete l.shown);
+        running = true;
+        document.getElementById("startBtn").disabled = true;
+        document.getElementById("stopBtn").disabled = false;
+        moveCar();
+      }
+    });
+
+    document.getElementById("stopBtn").addEventListener("click", () => {
+      running = false;
+      clearTimeout(timer);
+      document.getElementById("startBtn").disabled = false;
+      document.getElementById("stopBtn").disabled = true;
+      document.getElementById("remark-box").innerText = "⏹ Route paused.";
+    });
+
+    document.getElementById("prevBtn").addEventListener("click", () => {
+      if (i > 1) {
+        i -= 2;
+        car.setLatLng(route[i]);
+        const nearbyLandmark = landmarks.find(l =>
+          Math.abs(l.coords[0] - route[i][0]) < 0.0009 &&
+          Math.abs(l.coords[1] - route[i][1]) < 0.0009
+        );
+        document.getElementById("remark-box").innerText =
+          nearbyLandmark ? nearbyLandmark.remark : "Moved to previous point.";
+      } else {
+        document.getElementById("remark-box").innerText = "Already at start point.";
+      }
+    });
+  </script>
+</body>
+</html>
