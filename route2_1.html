@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Route 2.1 – Coleman St → Clive St (via Chinatown)</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Poppins, sans-serif;
+      background: #f0f8ff;
+      text-align: center;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin: 10px;
+      padding: 8px 14px;
+      background: #0077b6;
+      color: #fff;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 500;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .back-link:hover {
+      background-color: #005f87;
+    }
+
+    h2 {
+      margin: 4px 12px 2px;
+      font-size: 1.2em;
+    }
+
+    #map {
+      height: 55vh;
+      width: 95%;
+      border-radius: 12px;
+      margin: 5px auto;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    #remark-box {
+      font-size: 1em;
+      margin-top: 8px;
+      padding: 10px;
+      background: #fff8dc;
+      border-radius: 8px;
+      width: 90%;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      min-height: 2.4em;
+    }
+
+    .controls {
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    button {
+      padding: 8px 18px;
+      font-size: 0.95em;
+      margin: 5px 3px;
+      border: none;
+      border-radius: 6px;
+      background-color: #0077b6;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    button:hover {
+      background-color: #005f87;
+    }
+    button:disabled {
+      background-color: #a0c4ff;
+      cursor: not-allowed;
+    }
+
+    .toggle-wrapper {
+      margin-top: 6px;
+      font-size: 0.9em;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+    }
+    .toggle-wrapper input[type="checkbox"] {
+      transform: scale(1.1);
+      cursor: pointer;
+    }
+
+    /* LEGEND */
+    #legend-box {
+      position: fixed;
+      top: 20px;
+      right: 15px;
+      background: #ffffffcc;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.85em;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      text-align: left;
+      line-height: 1.4em;
+      z-index: 9999;
+    }
+    .light {
+      display: inline-block;
+      width: 11px;
+      height: 11px;
+      margin-right: 6px;
+      border-radius: 50%;
+    }
+    .light.red { background: red; }
+    .light.amber { background: orange; }
+    .light.green { background: green; }
+
+    /* PROGRESS BAR */
+    #progress-container {
+      width: 90%;
+      height: 10px;
+      background: #e0e0e0;
+      border-radius: 6px;
+      margin: 15px auto 5px;
+      overflow: hidden;
+    }
+    #progress-bar {
+      width: 0%;
+      height: 100%;
+      background: #0077b6;
+      transition: width 0.2s linear;
+    }
+    #progress-text {
+      font-size: 0.9em;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    /* TIMER */
+    #timer-box {
+      margin-top: 8px;
+      font-size: 1.1em;
+      font-weight: 600;
+      color: #023e8a;
+    }
+
+    /* SPEED CONTROL */
+    #speed-control {
+      margin-top: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9em;
+    }
+    #speedSlider {
+      width: 160px;
+    }
+    #speed-label {
+      font-weight: 600;
+      color: #024b84;
+    }
+
+    /* LOWER PANELS */
+    .bottom-panels {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      width: 95%;
+      margin: 10px auto 20px;
+    }
+
+    #narration-panel, #checkpoints-panel {
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      padding: 10px 12px;
+      font-size: 0.9em;
+      text-align: left;
+      flex: 1 1 260px;
+      max-width: 360px;
+    }
+
+    #narration-panel h3,
+    #checkpoints-panel h3 {
+      margin: 0 0 6px;
+      font-size: 1em;
+      color: #023e8a;
+    }
+
+    #current-narration,
+    #next-narration {
+      margin: 3px 0;
+    }
+
+    #checkpoints-panel ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 4px 0 0;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    #checkpoints-panel li {
+      margin-bottom: 4px;
+      font-size: 0.88em;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .checkpoint-icon {
+      font-size: 0.9em;
+      width: 18px;
+      text-align: center;
+    }
+
+    .checkpoint.done {
+      color: green;
+      text-decoration: line-through;
+    }
+
+    /* MINI-MAP */
+    #mini-map-container {
+      position: fixed;
+      bottom: 15px;
+      right: 15px;
+      width: 180px;
+      height: 130px;
+      background: #ffffffcc;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      z-index: 9998;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #mini-map-title {
+      font-size: 0.8em;
+      padding: 4px 6px;
+      background: #0077b6;
+      color: #fff;
+      text-align: left;
+    }
+    #mini-map {
+      flex: 1;
+    }
+
+    @media (min-width: 768px) {
+      h2 { font-size: 1.5em; }
+      #map { height: 60vh; width: 90%; }
+      #remark-box { font-size: 1.05em; width: 80%; }
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-link">⬅ Back to Home</a>
+
+  <h2>🚗 Route 2.1 – Coleman St → Clive St (via Chinatown)</h2>
+
+  <div id="map"></div>
+
+  <div id="remark-box">Start of the route...</div>
+
+  <!-- LEGEND -->
+  <div id="legend-box">
+    <strong>Traffic Lights</strong><br>
+    <span class="light red"></span> Red – Stop<br>
+    <span class="light amber"></span> Amber – Prepare to Stop<br>
+    <span class="light green"></span> Green – Moving
+  </div>
+
+  <!-- PROGRESS BAR -->
+  <div id="progress-container">
+    <div id="progress-bar"></div>
+  </div>
+  <div id="progress-text">Progress: 0%</div>
+
+  <!-- TIMER -->
+  <div id="timer-box">⏱ 00:00</div>
+
+  <!-- SPEED CONTROL -->
+  <div id="speed-control">
+    <span>Speed:</span>
+    <input type="range" id="speedSlider" min="1" max="3" step="1" value="2" />
+    <span id="speed-label">Normal</span>
+  </div>
+
+  <!-- MAIN CONTROLS -->
+  <div class="controls">
+    <button id="startBtn">▶ Start</button>
+    <button id="stopBtn" disabled>⏹ Stop</button>
+    <button id="prevBtn">⏪ Previous</button>
+    <button id="resetBtn">🔁 Reset</button>
+  </div>
+
+  <div class="toggle-wrapper">
+    <label for="voiceToggle">🔊 Voice narration</label>
+    <input type="checkbox" id="voiceToggle" checked />
+  </div>
+
+  <!-- PANELS -->
+  <div class="bottom-panels">
+    <div id="narration-panel">
+      <h3>Auto-Narration</h3>
+      <div id="current-narration"><strong>Current:</strong> None yet — starting soon.</div>
+      <div id="next-narration"><strong>Next:</strong> Central Fire Station</div>
+    </div>
+
+    <div id="checkpoints-panel">
+      <h3>Milestone Checkpoints</h3>
+      <ul id="checkpoint-list"></ul>
+    </div>
+  </div>
+
+  <!-- MINI MAP -->
+  <div id="mini-map-container">
+    <div id="mini-map-title">Mini Overview</div>
+    <div id="mini-map"></div>
+  </div>
+
+  <audio id="narrationPlayer"></audio>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="js/engine.js"></script>
+  <script>
+    const ROUTE_CONFIG = {
+      heading: "🚗 Route 2.1 – Coleman St → Clive St (via Chinatown)",
+      // Centre over civic district / Chinatown / Little India loop
+      initialView: { lat: 1.2935, lng: 103.8505, zoom: 14 },
+      audioBasePath: "audio/",
+
+      /* -------------------------------------------------
+         ROUTE 2.1 – Coleman St → Hill → Victoria → Middle
+         → North Bridge → South Bridge → Kreta Ayer
+         → Eu Tong Sen → Hill → Victoria → Middle
+         → Selegie → Sungei → Clive St (Indian Heritage)
+      ------------------------------------------------- */
+      route: [
+        // Coleman / Hill area start (near Central Fire Station)
+        [1.2930, 103.8495],   // Start – Coleman / Hill
+        [1.2932, 103.8498],   // Hill St up
+        [1.2940, 103.8502],
+        [1.2946, 103.8506],   // Hill → Victoria
+
+        // Victoria St towards Middle Rd
+        [1.2955, 103.8513],
+        [1.2959, 103.8516],
+        [1.2963, 103.8520],
+        [1.2968, 103.8526],
+        [1.2975, 103.8532],
+        [1.2982, 103.8537],
+        [1.2984, 103.8542],   // Victoria / Middle
+
+        // Left onto Middle Rd towards North Bridge
+        [1.2980, 103.8547],
+        [1.2978, 103.8550],
+        [1.2974, 103.8548],   // Middle / North Bridge
+
+        // North Bridge Rd heading south
+        [1.2967, 103.8543],
+        [1.2963, 103.8539],
+        [1.2959, 103.8537],
+        [1.2952, 103.8532],
+        [1.2946, 103.8527],
+        [1.2937, 103.8521],
+        [1.2930, 103.8516],
+        [1.2923, 103.8512],
+        [1.2917, 103.8509],
+        [1.2913, 103.8507],
+        [1.2907, 103.8503],
+        [1.2903, 103.8500],
+        [1.2898, 103.8496],
+        [1.2893, 103.8494],   // Elgin Bridge
+
+        // South Bridge Rd into Chinatown
+        [1.2889, 103.8491],
+        [1.2881, 103.8487],
+        [1.2872, 103.8480],
+        [1.2860, 103.8473],
+        [1.2848, 103.8466],
+        [1.2838, 103.8461],
+        [1.2830, 103.8456],
+        [1.2827, 103.8455],
+        [1.2820, 103.8451],
+        [1.2818, 103.8449],   // South Bridge / Erskine region
+
+        // RIGHT into Kreta Ayer Rd (approx)
+        [1.2822, 103.8445],   // into Kreta Ayer
+        [1.2828, 103.8441],
+        [1.2832, 103.8438],   // Kreta Ayer mid
+        [1.2836, 103.8437],   // approach Eu Tong Sen
+
+        // RIGHT into Eu Tong Sen St, heading east
+        [1.2845, 103.8440],
+        [1.2855, 103.8446],
+        [1.2865, 103.8452],
+        [1.2873, 103.8458],
+        [1.2879, 103.8463],
+        [1.2884, 103.8468],
+        [1.2892, 103.8475],
+        [1.2896, 103.8478],
+        [1.2899, 103.8480],
+        [1.2904, 103.8483],
+        [1.2909, 103.8486],   // Eu Tong Sen / Hill
+
+        // Hill St back northwards
+        [1.2916, 103.8489],
+        [1.2923, 103.8492],
+        [1.2932, 103.8498],   // back near starting Hill segment
+
+        // Back onto Victoria St again
+        [1.2940, 103.8502],
+        [1.2946, 103.8506],
+        [1.2955, 103.8513],
+        [1.2959, 103.8516],
+        [1.2963, 103.8520],
+        [1.2968, 103.8526],
+        [1.2975, 103.8532],
+        [1.2982, 103.8537],
+        [1.2984, 103.8542],   // Victoria / Middle
+
+        // LEFT onto Middle Rd towards NAFA / Selegie
+        [1.2990, 103.8538],
+        [1.2997, 103.8531],
+        [1.3003, 103.8524],
+        [1.3009, 103.8517],
+        [1.3013, 103.8512],
+        [1.3009, 103.8509],   // near NAFA / Middle
+
+        // RIGHT into Selegie Rd
+        [1.3014, 103.8503],
+        [1.3018, 103.8500],
+        [1.3027, 103.8500],
+        [1.3033, 103.8501],
+        [1.3040, 103.8503],
+        [1.3046, 103.8505],
+        [1.3051, 103.8509],   // Selegie / Sungei
+
+        // RIGHT into Sungei Rd
+        [1.3049, 103.8512],
+        [1.3047, 103.8514],
+        [1.3048, 103.8516],
+
+        // LEFT into Clive St, ending near Indian Heritage Centre
+        [1.3051, 103.8518],
+        [1.3053, 103.8521],
+        [1.30557, 103.85240]  // End – Indian Heritage Centre / Clive St
+      ],
+
+      /* -------------------------------
+         LANDMARKS ALONG ROUTE 2.1
+      ------------------------------- */
+      landmarks: [
+        {
+          name: "Central Fire Station",
+          coords: [1.2930, 103.8495],
+          remark: "We start beside the Central Fire Station, one of Singapore’s oldest fire stations with a striking red-and-white façade.",
+          audioId: "central_fire_station"
+        },
+        {
+          name: "Armenian Church",
+          coords: [1.2934, 103.8499],
+          remark: "On your left is the Armenian Church, the oldest Christian church in Singapore, completed in 1835.",
+          audioId: "armenian_church"
+        },
+        {
+          name: "CHIJMES",
+          coords: [1.2953, 103.8519],
+          remark: "Ahead on the right is CHIJMES, a former convent school turned dining and lifestyle enclave with a Gothic-style chapel.",
+          audioId: "chijmes"
+        },
+        {
+          name: "St Andrew’s Cathedral",
+          coords: [1.2936, 103.8519],
+          remark: "On your left is St Andrew’s Cathedral, a prominent white Anglican church with roots going back to the 19th century.",
+          audioId: "st_andrew_cathedral"
+        },
+        {
+          name: "National Gallery / Old Supreme Court",
+          coords: [1.2905, 103.8508],
+          remark: "On your left, the former City Hall and Old Supreme Court now house National Gallery Singapore, dedicated to Southeast Asian art.",
+          audioId: "national_gallery"
+        },
+        {
+          name: "Elgin Bridge",
+          coords: [1.2891, 103.8493],
+          remark: "Crossing Elgin Bridge, you link the civic district with Chinatown—this has long been a historic river crossing.",
+          audioId: "elgin_bridge"
+        },
+        {
+          name: "Sri Mariamman Temple",
+          coords: [1.2827, 103.8452],
+          remark: "Along South Bridge Road you pass Sri Mariamman Temple, Singapore’s oldest Hindu temple with a colourful entrance tower.",
+          audioId: "sri_mariamman"
+        },
+        {
+          name: "Buddha Tooth Relic Temple",
+          coords: [1.2813, 103.8445],
+          remark: "The Buddha Tooth Relic Temple stands out with its Tang-style inspired architecture in the heart of Chinatown.",
+          audioId: "buddha_tooth_relic"
+        },
+        {
+          name: "Kreta Ayer / Chinatown Complex",
+          coords: [1.2832, 103.8438],
+          remark: "Turning into Kreta Ayer Road, you enter the traditional heart of Chinatown, with markets, eateries and clan associations.",
+          audioId: "kreta_ayer"
+        },
+        {
+          name: "Eu Tong Sen Streetscape",
+          coords: [1.2873, 103.8458],
+          remark: "Eu Tong Sen Street runs parallel to the river, lined with malls, theatres and busy junctions serving Chinatown.",
+          audioId: "eu_tong_sen"
+        },
+        {
+          name: "Chinatown Point / People’s Park",
+          coords: [1.2884, 103.8468],
+          remark: "Around you are Chinatown Point and People’s Park, long-time landmarks for shopping, food and travel agencies.",
+          audioId: "chinatown_point"
+        },
+        {
+          name: "Singapore Management University (SMU)",
+          coords: [1.2953, 103.8505],
+          remark: "On Victoria Street you pass Singapore Management University, a city campus woven into the civic district.",
+          audioId: "smu"
+        },
+        {
+          name: "National Design Centre & National Library",
+          coords: [1.2984, 103.8536],
+          remark: "Nearby are the National Design Centre on your left and the National Library on your right, key creative and learning hubs.",
+          audioId: "national_design_centre"
+        },
+        {
+          name: "Nanyang Academy of Fine Arts (NAFA)",
+          coords: [1.3009, 103.8517],
+          remark: "At Middle Road you are near NAFA, nurturing generations of artists and designers in Singapore.",
+          audioId: "nafa"
+        },
+        {
+          name: "Tekka & Little India Gateway",
+          coords: [1.3051, 103.8509],
+          remark: "Turning along Selegie and Sungei Road, you are approaching Little India, known for spices, sarees and vibrant festivals.",
+          audioId: "tekka_gateway"
+        },
+        {
+          name: "Indian Heritage Centre / Clive Street",
+          coords: [1.30557, 103.85240],
+          remark: "We end at Clive Street by the Indian Heritage Centre—your starting point to explore Little India on foot.",
+          audioId: "indian_heritage_centre"
+        }
+      ],
+
+      /* -------------------------------
+         TRAFFIC LIGHTS – Route 2.1
+      ------------------------------- */
+      trafficLights: [
+        {
+          name: "Coleman / Hill Junction",
+          coords: [1.2930, 103.8495],
+          cycle: { green: 24, amber: 3, red: 36 },
+          offset: 0
+        },
+        {
+          name: "Hill / Victoria Junction",
+          coords: [1.2946, 103.8506],
+          cycle: { green: 26, amber: 3, red: 38 },
+          offset: 8
+        },
+        {
+          name: "Victoria / Middle Junction",
+          coords: [1.2984, 103.8542],
+          cycle: { green: 22, amber: 3, red: 33 },
+          offset: 14
+        },
+        {
+          name: "Middle / North Bridge Junction",
+          coords: [1.2974, 103.8548],
+          cycle: { green: 24, amber: 3, red: 36 },
+          offset: 5
+        },
+        {
+          name: "North Bridge / Elgin Bridge",
+          coords: [1.2893, 103.8494],
+          cycle: { green: 26, amber: 3, red: 38 },
+          offset: 10
+        },
+        {
+          name: "South Bridge / Kreta Ayer Junction",
+          coords: [1.2825, 103.8450],
+          cycle: { green: 20, amber: 3, red: 32 },
+          offset: 6
+        },
+        {
+          name: "Kreta Ayer / Eu Tong Sen Junction",
+          coords: [1.2836, 103.8437],
+          cycle: { green: 22, amber: 3, red: 34 },
+          offset: 12
+        },
+        {
+          name: "Victoria / Middle (return leg)",
+          coords: [1.2984, 103.8542],
+          cycle: { green: 22, amber: 3, red: 33 },
+          offset: 18
+        },
+        {
+          name: "Selegie / Sungei Junction",
+          coords: [1.3051, 103.8509],
+          cycle: { green: 20, amber: 3, red: 32 },
+          offset: 4
+        },
+        {
+          name: "Sungei / Clive Junction",
+          coords: [1.3053, 103.8521],
+          cycle: { green: 20, amber: 3, red: 30 },
+          offset: 9
+        }
+      ]
+    };
+
+    // Initialise via your shared engine
+    initRoute(ROUTE_CONFIG);
+  </script>
+</body>
+</html>
