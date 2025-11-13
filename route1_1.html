@@ -13,6 +13,7 @@
       background: #f0f8ff;
       text-align: center;
     }
+
     .back-link {
       display: inline-block;
       margin: 10px;
@@ -27,17 +28,20 @@
     .back-link:hover {
       background-color: #005f87;
     }
+
     h2 {
       margin: 4px 12px 2px;
       font-size: 1.2em;
     }
+
     #map {
-      height: 65vh;
+      height: 55vh;
       width: 95%;
       border-radius: 12px;
       margin: 5px auto;
       box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
+
     #remark-box {
       font-size: 1em;
       margin-top: 8px;
@@ -50,6 +54,7 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
       min-height: 2.4em;
     }
+
     .controls {
       margin-top: 10px;
       display: flex;
@@ -57,6 +62,7 @@
       flex-wrap: wrap;
       gap: 6px;
     }
+
     button {
       padding: 8px 18px;
       font-size: 0.95em;
@@ -75,6 +81,7 @@
       background-color: #a0c4ff;
       cursor: not-allowed;
     }
+
     .toggle-wrapper {
       margin-top: 6px;
       font-size: 0.9em;
@@ -87,66 +94,177 @@
       transform: scale(1.1);
       cursor: pointer;
     }
+
+    /* LEGEND */
+    #legend-box {
+      position: fixed;
+      top: 20px;
+      right: 15px;
+      background: #ffffffcc;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.85em;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      text-align: left;
+      line-height: 1.4em;
+      z-index: 9999;
+    }
+
+    .light {
+      display: inline-block;
+      width: 11px;
+      height: 11px;
+      margin-right: 6px;
+      border-radius: 50%;
+    }
+
+    .light.red { background: red; }
+    .light.amber { background: orange; }
+    .light.green { background: green; }
+
+    /* PROGRESS BAR */
+    #progress-container {
+      width: 90%;
+      height: 10px;
+      background: #e0e0e0;
+      border-radius: 6px;
+      margin: 15px auto 5px;
+      overflow: hidden;
+    }
+
+    #progress-bar {
+      width: 0%;
+      height: 100%;
+      background: #0077b6;
+      transition: width 0.2s linear;
+    }
+
+    #progress-text {
+      font-size: 0.9em;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    #timer-box {
+      margin-top: 8px;
+      font-size: 1.1em;
+      font-weight: 600;
+      color: #023e8a;
+    }
+
+    /* SPEED CONTROL */
+    #speed-control {
+      margin-top: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9em;
+    }
+    #speedSlider {
+      width: 160px;
+    }
+    #speed-label {
+      font-weight: 600;
+      color: #024b84;
+    }
+
+    /* LOWER PANELS LAYOUT */
+    .bottom-panels {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      width: 95%;
+      margin: 10px auto 20px;
+    }
+
+    #narration-panel, #checkpoints-panel {
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      padding: 10px 12px;
+      font-size: 0.9em;
+      text-align: left;
+      flex: 1 1 260px;
+      max-width: 360px;
+    }
+
+    #narration-panel h3,
+    #checkpoints-panel h3 {
+      margin: 0 0 6px;
+      font-size: 1em;
+      color: #023e8a;
+    }
+
+    #current-narration,
+    #next-narration {
+      margin: 3px 0;
+    }
+
+    #checkpoints-panel ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 4px 0 0;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    #checkpoints-panel li {
+      margin-bottom: 4px;
+      font-size: 0.88em;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .checkpoint-icon {
+      font-size: 0.9em;
+      width: 18px;
+      text-align: center;
+    }
+
+    .checkpoint.done {
+      color: green;
+      text-decoration: line-through;
+    }
+
+    /* MINI-MAP */
+    #mini-map-container {
+      position: fixed;
+      bottom: 15px;
+      right: 15px;
+      width: 180px;
+      height: 130px;
+      background: #ffffffcc;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      z-index: 9998;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #mini-map-title {
+      font-size: 0.8em;
+      padding: 4px 6px;
+      background: #0077b6;
+      color: #fff;
+      text-align: left;
+    }
+
+    #mini-map {
+      flex: 1;
+    }
+
     @media (min-width: 768px) {
       h2 { font-size: 1.5em; }
-      #map { height: 75vh; width: 90%; }
+      #map { height: 60vh; width: 90%; }
       #remark-box { font-size: 1.05em; width: 80%; }
-
-  /* LEGEND */
-#legend-box {
-  position: fixed;
-  top: 20px;
-  right: 15px;
-  background: #ffffffcc;
-  padding: 10px 12px;
-  border-radius: 8px;
-  font-size: 0.85em;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  text-align: left;
-  line-height: 1.4em;
-  z-index: 9999;
-}
-
-.light {
-  display: inline-block;
-  width: 11px;
-  height: 11px;
-  margin-right: 6px;
-  border-radius: 50%;
-}
-
-.light.red { background: red; }
-.light.amber { background: orange; }
-.light.green { background: green; }
-
-/* PROGRESS BAR */
-#progress-container {
-  width: 90%;
-  height: 10px;
-  background: #e0e0e0;
-  border-radius: 6px;
-  margin: 15px auto 5px;
-  overflow: hidden;
-}
-
-#progress-bar {
-  width: 0%;
-  height: 100%;
-  background: #0077b6;
-  transition: width 0.2s linear;
-}
-
-#progress-text {
-  font-size: 0.9em;
-  color: #333;
-  margin-bottom: 10px;
-}
-
     }
   </style>
 </head>
 <body>
-
   <a href="index.html" class="back-link">⬅ Back to Home</a>
 
   <h2>🚗 Singapore Route Tracker – Coleman St to Thian Hock Keng</h2>
@@ -155,7 +273,7 @@
 
   <div id="remark-box">Start of the route...</div>
 
-<!-- TRAFFIC LIGHT LEGEND -->
+  <!-- TRAFFIC LIGHT LEGEND -->
   <div id="legend-box">
     <strong>Traffic Lights</strong><br>
     <span class="light red"></span> Red – Stop<br>
@@ -163,12 +281,23 @@
     <span class="light green"></span> Green – Moving
   </div>
 
-<!-- PROGRESS BAR -->
-<div id="progress-container">
-  <div id="progress-bar"></div>
-</div>
-<div id="progress-text">Progress: 0%</div>
+  <!-- PROGRESS BAR -->
+  <div id="progress-container">
+    <div id="progress-bar"></div>
+  </div>
+  <div id="progress-text">Progress: 0%</div>
 
+   <!-- TIMER -->
+  <div id="timer-box">⏱ 00:00</div>
+
+  <!-- SPEED CONTROL -->
+  <div id="speed-control">
+    <span>Speed:</span>
+    <input type="range" id="speedSlider" min="1" max="3" step="1" value="2" />
+    <span id="speed-label">Normal</span>
+  </div>
+
+  <!-- MAIN CONTROLS -->
   <div class="controls">
     <button id="startBtn">▶ Start</button>
     <button id="stopBtn" disabled>⏹ Stop</button>
@@ -181,23 +310,54 @@
     <input type="checkbox" id="voiceToggle" checked />
   </div>
 
+  <!-- Auto narration + checkpoints panels -->
+  <div class="bottom-panels">
+    <div id="narration-panel">
+      <h3>Auto-Narration</h3>
+      <div id="current-narration"><strong>Current:</strong> None yet — starting soon.</div>
+      <div id="next-narration"><strong>Next:</strong> Central Fire Station</div>
+    </div>
+
+    <div id="checkpoints-panel">
+      <h3>Milestone Checkpoints</h3>
+      <ul id="checkpoint-list">
+        <!-- Populated by JS -->
+      </ul>
+    </div>
+  </div>
+
+  <!-- MINI MAP OVERVIEW -->
+  <div id="mini-map-container">
+    <div id="mini-map-title">Mini Overview</div>
+    <div id="mini-map"></div>
+  </div>
+
   <!-- Single audio player reused for all narrations -->
   <audio id="narrationPlayer"></audio>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
+    const remarkBox = document.getElementById("remark-box");
+    const progressBar = document.getElementById("progress-bar");
+    const progressText = document.getElementById("progress-text");
+    const speedSlider = document.getElementById("speedSlider");
+    const speedLabel = document.getElementById("speed-label");
+    const narrationAudio = document.getElementById("narrationPlayer");
+    const voiceToggle = document.getElementById("voiceToggle");
+    const currentNarrationEl = document.getElementById("current-narration");
+    const nextNarrationEl = document.getElementById("next-narration");
+    const checkpointList = document.getElementById("checkpoint-list");
+
     // -----------------------------
-    // MAP INITIALISATION
+    // MAIN MAP INITIALISATION
     // -----------------------------
     const map = L.map('map').setView([1.290270, 103.851959], 14);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    const remarkBox = document.getElementById("remark-box");
-
     // -----------------------------
-    // ROUTE COORDINATES (unchanged)
+    // ROUTE COORDINATES
     // -----------------------------
     const route = [
       [1.2928, 103.8489], // Coleman St 1
@@ -289,12 +449,11 @@
       [1.2806, 103.8475], // Telok Ayer St 2 / End at Thian Hock Keng Temple
     ];
 
-    // Draw the polyline on map
     const polyline = L.polyline(route, { color: 'blue', weight: 5 }).addTo(map);
     map.fitBounds(polyline.getBounds());
 
     // -----------------------------
-    // LANDMARKS + TEXT NARRATION
+    // LANDMARKS
     // -----------------------------
     const landmarks = [
       {
@@ -473,13 +632,30 @@
       }
     ];
 
-    // Add landmark markers
+    // Landmark markers
     landmarks.forEach(lm => {
       L.marker(lm.coords).addTo(map).bindPopup(lm.name);
     });
 
     // -----------------------------
-    // TRAFFIC LIGHTS (real-world style cycle)
+    // MINI MAP INITIALISATION
+    // -----------------------------
+    const miniMap = L.map('mini-map', {
+      zoomControl: false,
+      dragging: false,
+      scrollWheelZoom: false,
+      doubleClickZoom: false,
+      boxZoom: false,
+      keyboard: false,
+      attributionControl: false
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(miniMap);
+    const miniPolyline = L.polyline(route, { color: 'blue', weight: 3 }).addTo(miniMap);
+    miniMap.fitBounds(miniPolyline.getBounds());
+
+    // -----------------------------
+    // TRAFFIC LIGHTS (real-world-style)
     // -----------------------------
     const trafficLights = [
       {
@@ -530,7 +706,6 @@
       return "red";
     }
 
-    // Render traffic lights as small coloured circles
     trafficLights.forEach(light => {
       const marker = L.circleMarker(light.coords, {
         radius: 6,
@@ -542,7 +717,6 @@
       light.state = "red";
     });
 
-    // Update light colours every second
     setInterval(() => {
       lightTimer++;
       trafficLights.forEach(light => {
@@ -562,8 +736,38 @@
       );
     }
 
+    // TIMER
+    let routeTimer = 0;        // seconds elapsed
+    let timerInterval = null;
+    const timerBox = document.getElementById("timer-box");
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function startTimer() {
+      if (timerInterval) return; // avoid double-start
+      timerInterval = setInterval(() => {
+        routeTimer++;
+        timerBox.textContent = `⏱ ${formatTime(routeTimer)}`;
+      }, 1000);
+    }
+
+    function stopTimer() {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+
+    function resetTimer() {
+      stopTimer();
+      routeTimer = 0;
+      timerBox.textContent = "⏱ 00:00";
+    }
+
     // -----------------------------
-    // CAR MARKER + SMOOTH MOVEMENT
+    // CAR MARKERS (main map + mini map)
     // -----------------------------
     const carIcon = L.icon({
       iconUrl: 'https://cdn-icons-png.flaticon.com/512/854/854894.png',
@@ -571,21 +775,90 @@
     });
     const car = L.marker(route[0], { icon: carIcon }).addTo(map);
 
-    let currentIndex = 0;    // index of current point in route
+    const miniCarIcon = L.icon({
+      iconUrl: 'https://cdn-icons-png.flaticon.com/512/854/854894.png',
+      iconSize: [20, 20]
+    });
+    const miniCar = L.marker(route[0], { icon: miniCarIcon }).addTo(miniMap);
+
+    let currentIndex = 0;
     let running = false;
     let moveTimer = null;
 
-    const narrationAudio = document.getElementById("narrationPlayer");
-    const voiceToggle = document.getElementById("voiceToggle");
+    // SPEED CONTROL
+    let speedSetting = 2; // 1=Slow, 2=Normal, 3=Fast
 
+    function updateSpeedLabel() {
+      if (speedSetting === 1) speedLabel.textContent = "Slow";
+      else if (speedSetting === 2) speedLabel.textContent = "Normal";
+      else speedLabel.textContent = "Fast";
+    }
+
+    function getStepDelay() {
+      // Base 60ms, slower when speedSetting is low
+      return 60 * (4 - speedSetting); // 1->180ms, 2->120ms, 3->60ms
+    }
+
+    speedSlider.addEventListener("input", () => {
+      speedSetting = parseInt(speedSlider.value, 10);
+      updateSpeedLabel();
+    });
+    updateSpeedLabel();
+
+    // NARRATION + AUDIO
     function playNarrationFor(landmark) {
       if (!voiceToggle.checked) return;
       if (!landmark.audioId) return;
-      const src = `audio/${landmark.audioId}.mp3`; // You place files here
+      const src = `audio/${landmark.audioId}.mp3`; // you place files here
       narrationAudio.src = src;
       narrationAudio.play().catch(() => {
-        // ignore autoplay errors quietly
+        // Ignore autoplay errors (e.g. browser block)
       });
+    }
+
+    function updateNarrationPanel(currentLm, nextLm) {
+      if (currentLm) {
+        currentNarrationEl.innerHTML =
+          `<strong>Current:</strong> ${currentLm.name}`;
+      } else {
+        currentNarrationEl.innerHTML =
+          "<strong>Current:</strong> None yet — starting soon.";
+      }
+
+      if (nextLm) {
+        nextNarrationEl.innerHTML =
+          `<strong>Next:</strong> ${nextLm.name}`;
+      } else {
+        nextNarrationEl.innerHTML =
+          "<strong>Next:</strong> End of route.";
+      }
+    }
+
+    // CHECKPOINT LIST
+    function buildCheckpointList() {
+      checkpointList.innerHTML = "";
+      landmarks.forEach((lm, idx) => {
+        const li = document.createElement("li");
+        li.id = `checkpoint-${idx}`;
+        li.classList.add("checkpoint");
+        li.innerHTML = `<span class="checkpoint-icon">⬜</span><span>${lm.name}</span>`;
+        checkpointList.appendChild(li);
+      });
+      // initial "next"
+      if (landmarks.length > 0) {
+        updateNarrationPanel(null, landmarks[0]);
+      }
+    }
+    buildCheckpointList();
+
+    function markCheckpointDone(landmark) {
+      const idx = landmarks.indexOf(landmark);
+      if (idx === -1) return;
+      const li = document.getElementById(`checkpoint-${idx}`);
+      if (!li) return;
+      li.classList.add("done");
+      const iconSpan = li.querySelector(".checkpoint-icon");
+      if (iconSpan) iconSpan.textContent = "✔";
     }
 
     function handleLandmarksAt(position) {
@@ -594,13 +867,28 @@
         Math.abs(l.coords[0] - position[0]) < 0.0008 &&
         Math.abs(l.coords[1] - position[1]) < 0.0008
       );
+
       if (nearbyLandmark) {
         nearbyLandmark.shown = true;
         remarkBox.innerText = nearbyLandmark.remark;
         playNarrationFor(nearbyLandmark);
+        markCheckpointDone(nearbyLandmark);
+
+        const currentIdx = landmarks.indexOf(nearbyLandmark);
+        const nextLm = landmarks[currentIdx + 1] || null;
+        updateNarrationPanel(nearbyLandmark, nextLm);
       } else {
         remarkBox.innerText = "Moving along the route...";
       }
+    }
+
+    // PROGRESS UTILS
+    function updateProgress(currentIdx, segmentProgress) {
+      const totalSegments = route.length - 1;
+      const overall = (currentIdx + segmentProgress) / totalSegments;
+      const percent = Math.max(0, Math.min(100, Math.floor(overall * 100)));
+      progressBar.style.width = percent + "%";
+      progressText.innerText = "Progress: " + percent + "%";
     }
 
     function clearMoveTimer() {
@@ -610,14 +898,15 @@
       }
     }
 
-    // Smooth movement between route[currentIndex] and route[currentIndex+1]
+    // -----------------------------
+    // SMOOTH MOVEMENT ENGINE
+    // -----------------------------
     function moveCar() {
       if (!running) return;
       if (currentIndex >= route.length - 1) {
         remarkBox.innerText = "🏁 Route completed!";
-        document.getElementById("progress-bar").style.width = "100%";
-        document.getElementById("progress-text").innerText = "Progress: 100%";
-
+        progressBar.style.width = "100%";
+        progressText.innerText = "Progress: 100%";
         document.getElementById("startBtn").disabled = false;
         document.getElementById("stopBtn").disabled = true;
         running = false;
@@ -626,46 +915,37 @@
 
       const from = route[currentIndex];
       const to = route[currentIndex + 1];
-
-      // Update progress bar
-      const progressPercent =
-        Math.floor((currentIndex / (route.length - 1)) * 100);
-
-      document.getElementById("progress-bar").style.width = progressPercent + "%";
-      document.getElementById("progress-text").innerText =
-        "Progress: " + progressPercent + "%";
-
       let progress = 0; // 0 → 1
 
       const step = () => {
         if (!running) return;
 
-        // Current interpolated position
         const lat = from[0] + (to[0] - from[0]) * progress;
         const lng = from[1] + (to[1] - from[1]) * progress;
         const pos = [lat, lng];
 
-        // Check traffic light near this position
+        // Check traffic lights
         const light = getTrafficLightNear(pos);
         if (light && (light.state === "red" || light.state === "amber")) {
           remarkBox.innerText = `🛑 Red light at ${light.name}. Please wait...`;
-          moveTimer = setTimeout(step, 500); // Wait and check again
+          moveTimer = setTimeout(step, 500);
           return;
         }
 
         car.setLatLng(pos);
+        miniCar.setLatLng(pos);
+        updateProgress(currentIndex, progress);
 
-        progress += 0.02; // smaller = smoother/slower
+        progress += 0.02;
         if (progress >= 1) {
-          // Arrived at the next route point
           currentIndex++;
           const finalPos = route[currentIndex];
           car.setLatLng(finalPos);
+          miniCar.setLatLng(finalPos);
           handleLandmarksAt(finalPos);
-          // Move on to the next segment
           moveCar();
         } else {
-          moveTimer = setTimeout(step, 60); // controls speed
+          moveTimer = setTimeout(step, getStepDelay());
         }
       };
 
@@ -681,17 +961,29 @@
     const resetBtn = document.getElementById("resetBtn");
 
     startBtn.addEventListener("click", () => {
+      
       if (!running) {
-        // Reset shown landmarks when starting fresh from point 0
         if (currentIndex === 0) {
           landmarks.forEach(l => delete l.shown);
+          checkpointList.querySelectorAll(".checkpoint").forEach(li => {
+            li.classList.remove("done");
+            const iconSpan = li.querySelector(".checkpoint-icon");
+            if (iconSpan) iconSpan.textContent = "⬜";
+          });
+          if (landmarks.length > 0) {
+            updateNarrationPanel(null, landmarks[0]);
+          }
           remarkBox.innerText = "Starting the route. Look out for key landmarks along the way.";
+          updateProgress(0, 0);
         } else {
           remarkBox.innerText = "Resuming the route...";
         }
         running = true;
         startBtn.disabled = true;
         stopBtn.disabled = false;
+
+        startTimer();
+
         moveCar();
       }
     });
@@ -699,41 +991,51 @@
     stopBtn.addEventListener("click", () => {
       running = false;
       clearMoveTimer();
+      stopTimer();
       startBtn.disabled = false;
       stopBtn.disabled = true;
       remarkBox.innerText = "⏹ Route paused.";
     });
 
     prevBtn.addEventListener("click", () => {
-      // Move one point back (discrete jump, for quick review)
       running = false;
       clearMoveTimer();
       if (currentIndex > 0) {
         currentIndex--;
         const pos = route[currentIndex];
         car.setLatLng(pos);
+        miniCar.setLatLng(pos);
         remarkBox.innerText = "Moved to previous point.";
+        updateProgress(currentIndex, 0);
       } else {
         remarkBox.innerText = "Already at the start point.";
+        updateProgress(0, 0);
       }
       startBtn.disabled = false;
       stopBtn.disabled = true;
     });
 
     resetBtn.addEventListener("click", () => {
-    document.getElementById("progress-bar").style.width = "0%";
-    document.getElementById("progress-text").innerText = "Progress: 0%";
-
       running = false;
       clearMoveTimer();
+      resetTimer();
       currentIndex = 0;
       car.setLatLng(route[0]);
+      miniCar.setLatLng(route[0]);
       landmarks.forEach(l => delete l.shown);
+      checkpointList.querySelectorAll(".checkpoint").forEach(li => {
+        li.classList.remove("done");
+        const iconSpan = li.querySelector(".checkpoint-icon");
+        if (iconSpan) iconSpan.textContent = "⬜";
+      });
       remarkBox.innerText = "Route reset. Press Start to begin again.";
+      updateProgress(0, 0);
+      if (landmarks.length > 0) {
+        updateNarrationPanel(null, landmarks[0]);
+      }
       startBtn.disabled = false;
       stopBtn.disabled = true;
     });
   </script>
 </body>
 </html>
-
