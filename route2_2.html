@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Route 2.2 – Little India to Toa Payoh HDB Hub</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Poppins, sans-serif;
+      background: #f0f8ff;
+      text-align: center;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin: 10px;
+      padding: 8px 14px;
+      background: #0077b6;
+      color: #fff;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 500;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .back-link:hover {
+      background-color: #005f87;
+    }
+
+    h2 {
+      margin: 4px 12px 2px;
+      font-size: 1.2em;
+    }
+
+    #map {
+      height: 55vh;
+      width: 95%;
+      border-radius: 12px;
+      margin: 5px auto;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    #remark-box {
+      font-size: 1em;
+      margin-top: 8px;
+      padding: 10px;
+      background: #fff8dc;
+      border-radius: 8px;
+      width: 90%;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      min-height: 2.4em;
+    }
+
+    .controls {
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    button {
+      padding: 8px 18px;
+      font-size: 0.95em;
+      margin: 5px 3px;
+      border: none;
+      border-radius: 6px;
+      background-color: #0077b6;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    button:hover {
+      background-color: #005f87;
+    }
+    button:disabled {
+      background-color: #a0c4ff;
+      cursor: not-allowed;
+    }
+
+    .toggle-wrapper {
+      margin-top: 6px;
+      font-size: 0.9em;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+    }
+    .toggle-wrapper input[type="checkbox"] {
+      transform: scale(1.1);
+      cursor: pointer;
+    }
+
+    /* LEGEND */
+    #legend-box {
+      position: fixed;
+      top: 20px;
+      right: 15px;
+      background: #ffffffcc;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.85em;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      text-align: left;
+      line-height: 1.4em;
+      z-index: 9999;
+    }
+    .light {
+      display: inline-block;
+      width: 11px;
+      height: 11px;
+      margin-right: 6px;
+      border-radius: 50%;
+    }
+    .light.red { background: red; }
+    .light.amber { background: orange; }
+    .light.green { background: green; }
+
+    /* PROGRESS BAR */
+    #progress-container {
+      width: 90%;
+      height: 10px;
+      background: #e0e0e0;
+      border-radius: 6px;
+      margin: 15px auto 5px;
+      overflow: hidden;
+    }
+    #progress-bar {
+      width: 0%;
+      height: 100%;
+      background: #0077b6;
+      transition: width 0.2s linear;
+    }
+    #progress-text {
+      font-size: 0.9em;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    /* TIMER */
+    #timer-box {
+      margin-top: 8px;
+      font-size: 1.1em;
+      font-weight: 600;
+      color: #023e8a;
+    }
+
+    /* SPEED CONTROL */
+    #speed-control {
+      margin-top: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9em;
+    }
+    #speedSlider {
+      width: 160px;
+    }
+    #speed-label {
+      font-weight: 600;
+      color: #024b84;
+    }
+
+    /* LOWER PANELS */
+    .bottom-panels {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      width: 95%;
+      margin: 10px auto 20px;
+    }
+
+    #narration-panel, #checkpoints-panel {
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      padding: 10px 12px;
+      font-size: 0.9em;
+      text-align: left;
+      flex: 1 1 260px;
+      max-width: 360px;
+    }
+
+    #narration-panel h3,
+    #checkpoints-panel h3 {
+      margin: 0 0 6px;
+      font-size: 1em;
+      color: #023e8a;
+    }
+
+    #current-narration,
+    #next-narration {
+      margin: 3px 0;
+    }
+
+    #checkpoints-panel ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 4px 0 0;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    #checkpoints-panel li {
+      margin-bottom: 4px;
+      font-size: 0.88em;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .checkpoint-icon {
+      font-size: 0.9em;
+      width: 18px;
+      text-align: center;
+    }
+
+    .checkpoint.done {
+      color: green;
+      text-decoration: line-through;
+    }
+
+    /* MINI-MAP */
+    #mini-map-container {
+      position: fixed;
+      bottom: 15px;
+      right: 15px;
+      width: 180px;
+      height: 130px;
+      background: #ffffffcc;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      z-index: 9998;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #mini-map-title {
+      font-size: 0.8em;
+      padding: 4px 6px;
+      background: #0077b6;
+      color: #fff;
+      text-align: left;
+    }
+    #mini-map {
+      flex: 1;
+    }
+
+    @media (min-width: 768px) {
+      h2 { font-size: 1.5em; }
+      #map { height: 60vh; width: 90%; }
+      #remark-box { font-size: 1.05em; width: 80%; }
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-link">⬅ Back to Home</a>
+
+  <h2>🚗 Route 2.2 – Clive St (Little India) → Toa Payoh HDB Hub</h2>
+
+  <div id="map"></div>
+
+  <div id="remark-box">Start of the route...</div>
+
+  <!-- LEGEND -->
+  <div id="legend-box">
+    <strong>Traffic Lights</strong><br>
+    <span class="light red"></span> Red – Stop<br>
+    <span class="light amber"></span> Amber – Prepare to Stop<br>
+    <span class="light green"></span> Green – Moving
+  </div>
+
+  <!-- PROGRESS BAR -->
+  <div id="progress-container">
+    <div id="progress-bar"></div>
+  </div>
+  <div id="progress-text">Progress: 0%</div>
+
+  <!-- TIMER -->
+  <div id="timer-box">⏱ 00:00</div>
+
+  <!-- SPEED CONTROL -->
+  <div id="speed-control">
+    <span>Speed:</span>
+    <input type="range" id="speedSlider" min="1" max="3" step="1" value="2" />
+    <span id="speed-label">Normal</span>
+  </div>
+
+  <!-- MAIN CONTROLS -->
+  <div class="controls">
+    <button id="startBtn">▶ Start</button>
+    <button id="stopBtn" disabled>⏹ Stop</button>
+    <button id="prevBtn">⏪ Previous</button>
+    <button id="resetBtn">🔁 Reset</button>
+  </div>
+
+  <div class="toggle-wrapper">
+    <label for="voiceToggle">🔊 Voice narration</label>
+    <input type="checkbox" id="voiceToggle" checked />
+  </div>
+
+  <!-- PANELS -->
+  <div class="bottom-panels">
+    <div id="narration-panel">
+      <h3>Auto-Narration</h3>
+      <div id="current-narration"><strong>Current:</strong> None yet — starting soon.</div>
+      <div id="next-narration"><strong>Next:</strong> Indian Heritage Centre</div>
+    </div>
+
+    <div id="checkpoints-panel">
+      <h3>Milestone Checkpoints</h3>
+      <ul id="checkpoint-list"></ul>
+    </div>
+  </div>
+
+  <!-- MINI MAP -->
+  <div id="mini-map-container">
+    <div id="mini-map-title">Mini Overview</div>
+    <div id="mini-map"></div>
+  </div>
+
+  <audio id="narrationPlayer"></audio>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="js/engine.js"></script>
+  <script>
+    const ROUTE_CONFIG = {
+      heading: "🚗 Route 2.2 – Clive St (Little India) → Toa Payoh HDB Hub",
+      initialView: { lat: 1.307, lng: 103.853, zoom: 14 },
+      audioBasePath: "audio/",
+
+      /* ===========================
+         ROUTE 2.2 COORDS (approx.)
+         Clive St → Dickson → Jln Besar
+         → Rochor Canal Rd → Bukit Timah Rd
+         → CTE → Toa Payoh Lor 6 (HDB Hub)
+      ============================ */
+      route: [
+        // Clive Street (start – same cluster as Route 1.3/1.2 area)
+        [1.30557, 103.85240],   // Clive St / Indian Heritage Centre (start)
+        [1.30593, 103.85286],   // Clive St towards Dickson
+        [1.30614, 103.85298],   // Clive St / Dickson Rd junction
+
+        // Dickson Road
+        [1.30592, 103.85338],   // Dickson Rd 2
+        [1.30545, 103.85392],   // Dickson Rd 3
+        [1.30513, 103.85433],   // Dickson Rd 4
+
+        // Jalan Besar
+        [1.30474, 103.85486],   // Jln Besar 1
+        [1.30414, 103.85449],   // Jln Besar 2
+        [1.30345, 103.85403],   // Jln Besar 3 (towards Rochor Canal Rd)
+
+        // Rochor Canal Road
+        [1.30410, 103.85340],   // turn right into Rochor Canal stretch
+        [1.30510, 103.85260],   // Rochor Canal / Bukit Timah approach
+
+        // Bukit Timah Road (heading north-west)
+        [1.30780, 103.84950],   // near Newton area (Bukit Timah Rd)
+        [1.31150, 103.84680],   // further along Bukit Timah / CTE approach
+
+        // CTE Northbound
+        [1.31750, 103.84620],   // on CTE heading north
+        [1.32350, 103.84680],   // CTE approaching Toa Payoh / Braddell exit
+
+        // Toa Payoh Lorong 6 / HDB Hub area (approx)
+        [1.33050, 103.84750],   // slip road towards Toa Payoh
+        [1.33400, 103.84850],   // Toa Payoh Lor 6 segment
+        [1.33450, 103.84820]    // Outside HDB Hub coach bay (end)
+      ],
+
+      /* ===========================
+         LANDMARKS
+      ============================ */
+      landmarks: [
+        {
+          name: "Indian Heritage Centre",
+          coords: [1.30575, 103.85217],
+          remark: "We start near the Indian Heritage Centre, tracing the stories and culture of Singapore’s Indian community.",
+          audioId: "indian_heritage_centre"
+        },
+        {
+          name: "Little India Streetscape",
+          coords: [1.3054, 103.8539],
+          remark: "As we turn into Dickson Road, notice the colourful shophouses and busy Little India streetscape around you.",
+          audioId: "little_india_streetscape"
+        },
+        {
+          name: "Jalan Besar Corridor",
+          coords: [1.3043, 103.8546],
+          remark: "Along Jalan Besar, workshops and traditional trades once lined this corridor; today it mixes heritage with new cafés and hotels.",
+          audioId: "jalan_besar_corridor"
+        },
+        {
+          name: "Rochor Canal / Rochor River",
+          coords: [1.3041, 103.8534],
+          remark: "You are driving alongside the Rochor Canal, once prone to flooding and now part of a landscaped waterway project.",
+          audioId: "rochor_canal"
+        },
+        {
+          name: "Bukit Timah Road",
+          coords: [1.3078, 103.8495],
+          remark: "On Bukit Timah Road, one of Singapore’s oldest trunk roads, we head out of the city towards the central expressways.",
+          audioId: "bukit_timah_road"
+        },
+        {
+          name: "CTE – Central Expressway",
+          coords: [1.3175, 103.8462],
+          remark: "We are now on the CTE, the Central Expressway, linking the city centre with heartland towns like Toa Payoh and Ang Mo Kio.",
+          audioId: "cte_central_expressway"
+        },
+        {
+          name: "Toa Payoh Town",
+          coords: [1.3320, 103.8479],
+          remark: "Toa Payoh is one of Singapore’s earliest public housing estates, a prototype for many new towns that followed.",
+          audioId: "toa_payoh_town"
+        },
+        {
+          name: "HDB Hub – Arrival",
+          coords: [1.3345, 103.8482],
+          remark: "We arrive outside HDB Hub at Toa Payoh, the headquarters for Singapore’s public housing board and a busy transport and shopping node.",
+          audioId: "hdb_hub_arrival"
+        }
+      ],
+
+      /* ===========================
+         TRAFFIC LIGHTS (approx)
+      ============================ */
+      trafficLights: [
+        {
+          name: "Clive St / Dickson Rd Junction",
+          coords: [1.30614, 103.85298],
+          cycle: { green: 22, amber: 3, red: 33 },
+          offset: 0
+        },
+        {
+          name: "Dickson Rd / Jalan Besar Junction",
+          coords: [1.30513, 103.85433],
+          cycle: { green: 24, amber: 3, red: 36 },
+          offset: 8
+        },
+        {
+          name: "Jalan Besar / Rochor Canal Rd Junction",
+          coords: [1.30410, 103.85340],
+          cycle: { green: 26, amber: 3, red: 38 },
+          offset: 12
+        },
+        {
+          name: "Bukit Timah / CTE On-Ramp",
+          coords: [1.31150, 103.84680],
+          cycle: { green: 20, amber: 3, red: 32 },
+          offset: 5
+        },
+        {
+          name: "Toa Payoh Exit / Lor 6 Junction",
+          coords: [1.33200, 103.84790],
+          cycle: { green: 21, amber: 3, red: 34 },
+          offset: 10
+        }
+      ]
+    };
+
+    // Kick off the standard engine (same as other routes)
+    initRoute(ROUTE_CONFIG);
+  </script>
+</body>
+</html>
