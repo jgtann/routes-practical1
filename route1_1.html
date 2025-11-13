@@ -623,6 +623,15 @@
 
       const from = route[currentIndex];
       const to = route[currentIndex + 1];
+
+      // Update progress bar
+      const progressPercent =
+        Math.floor((currentIndex / (route.length - 1)) * 100);
+
+      document.getElementById("progress-bar").style.width = progressPercent + "%";
+      document.getElementById("progress-text").innerText =
+        "Progress: " + progressPercent + "%";
+
       let progress = 0; // 0 → 1
 
       const step = () => {
