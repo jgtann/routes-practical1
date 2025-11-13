@@ -721,6 +721,9 @@
     });
 
     resetBtn.addEventListener("click", () => {
+    document.getElementById("progress-bar").style.width = "0%";
+    document.getElementById("progress-text").innerText = "Progress: 0%";
+
       running = false;
       clearMoveTimer();
       currentIndex = 0;
