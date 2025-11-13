@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Route 1.3</title>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Route 1.3 – Clive Street to Sultan Gate</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     body {
@@ -12,17 +13,35 @@
       background: #f0f8ff;
       text-align: center;
     }
+
+    .back-link {
+      display: inline-block;
+      margin: 10px;
+      padding: 8px 14px;
+      background: #0077b6;
+      color: #fff;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 500;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .back-link:hover {
+      background-color: #005f87;
+    }
+
     h2 {
-      margin: 12px;
+      margin: 4px 12px 2px;
       font-size: 1.2em;
     }
+
     #map {
-      height: 65vh;
+      height: 55vh;
       width: 95%;
       border-radius: 12px;
       margin: 5px auto;
       box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
+
     #remark-box {
       font-size: 1em;
       margin-top: 8px;
@@ -33,14 +52,21 @@
       margin-left: auto;
       margin-right: auto;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      min-height: 2.4em;
     }
+
     .controls {
       margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px;
     }
+
     button {
       padding: 8px 18px;
-      font-size: 1em;
-      margin: 5px;
+      font-size: 0.95em;
+      margin: 5px 3px;
       border: none;
       border-radius: 6px;
       background-color: #0077b6;
@@ -55,165 +81,410 @@
       background-color: #a0c4ff;
       cursor: not-allowed;
     }
+
+    .toggle-wrapper {
+      margin-top: 6px;
+      font-size: 0.9em;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+    }
+    .toggle-wrapper input[type="checkbox"] {
+      transform: scale(1.1);
+      cursor: pointer;
+    }
+
+    /* LEGEND */
+    #legend-box {
+      position: fixed;
+      top: 20px;
+      right: 15px;
+      background: #ffffffcc;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.85em;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      text-align: left;
+      line-height: 1.4em;
+      z-index: 9999;
+    }
+    .light {
+      display: inline-block;
+      width: 11px;
+      height: 11px;
+      margin-right: 6px;
+      border-radius: 50%;
+    }
+    .light.red { background: red; }
+    .light.amber { background: orange; }
+    .light.green { background: green; }
+
+    /* PROGRESS BAR */
+    #progress-container {
+      width: 90%;
+      height: 10px;
+      background: #e0e0e0;
+      border-radius: 6px;
+      margin: 15px auto 5px;
+      overflow: hidden;
+    }
+    #progress-bar {
+      width: 0%;
+      height: 100%;
+      background: #0077b6;
+      transition: width 0.2s linear;
+    }
+    #progress-text {
+      font-size: 0.9em;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    /* TIMER */
+    #timer-box {
+      margin-top: 8px;
+      font-size: 1.1em;
+      font-weight: 600;
+      color: #023e8a;
+    }
+
+    /* SPEED CONTROL */
+    #speed-control {
+      margin-top: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9em;
+    }
+    #speedSlider {
+      width: 160px;
+    }
+    #speed-label {
+      font-weight: 600;
+      color: #024b84;
+    }
+
+    /* LOWER PANELS */
+    .bottom-panels {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      width: 95%;
+      margin: 10px auto 20px;
+    }
+
+    #narration-panel, #checkpoints-panel {
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      padding: 10px 12px;
+      font-size: 0.9em;
+      text-align: left;
+      flex: 1 1 260px;
+      max-width: 360px;
+    }
+
+    #narration-panel h3,
+    #checkpoints-panel h3 {
+      margin: 0 0 6px;
+      font-size: 1em;
+      color: #023e8a;
+    }
+
+    #current-narration,
+    #next-narration {
+      margin: 3px 0;
+    }
+
+    #checkpoints-panel ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 4px 0 0;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    #checkpoints-panel li {
+      margin-bottom: 4px;
+      font-size: 0.88em;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .checkpoint-icon {
+      font-size: 0.9em;
+      width: 18px;
+      text-align: center;
+    }
+
+    .checkpoint.done {
+      color: green;
+      text-decoration: line-through;
+    }
+
+    /* MINI-MAP */
+    #mini-map-container {
+      position: fixed;
+      bottom: 15px;
+      right: 15px;
+      width: 180px;
+      height: 130px;
+      background: #ffffffcc;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      z-index: 9998;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #mini-map-title {
+      font-size: 0.8em;
+      padding: 4px 6px;
+      background: #0077b6;
+      color: #fff;
+      text-align: left;
+    }
+    #mini-map {
+      flex: 1;
+    }
+
     @media (min-width: 768px) {
       h2 { font-size: 1.5em; }
-      #map { height: 75vh; width: 90%; }
-      #remark-box { font-size: 1.1em; width: 80%; }
+      #map { height: 60vh; width: 90%; }
+      #remark-box { font-size: 1.05em; width: 80%; }
     }
   </style>
 </head>
-<a href="index.html"
-   style="display:inline-block;margin:10px;padding:8px 14px;background:#0077b6;color:#fff;
-          border-radius:6px;text-decoration:none;font-weight:500;">
-  ⬅ Back to Home
-</a>
-
 <body>
-  <h2>🚗 Singapore Route Tracker</h2>
+  <a href="index.html" class="back-link">⬅ Back to Home</a>
+
+  <h2>🚗 Singapore Route Tracker – Clive Street to Sultan Gate</h2>
+
   <div id="map"></div>
+
   <div id="remark-box">Start of the route...</div>
+
+  <!-- LEGEND -->
+  <div id="legend-box">
+    <strong>Traffic Lights</strong><br>
+    <span class="light red"></span> Red – Stop<br>
+    <span class="light amber"></span> Amber – Prepare to Stop<br>
+    <span class="light green"></span> Green – Moving
+  </div>
+
+  <!-- PROGRESS BAR -->
+  <div id="progress-container">
+    <div id="progress-bar"></div>
+  </div>
+  <div id="progress-text">Progress: 0%</div>
+
+  <!-- TIMER -->
+  <div id="timer-box">⏱ 00:00</div>
+
+  <!-- SPEED CONTROL -->
+  <div id="speed-control">
+    <span>Speed:</span>
+    <input type="range" id="speedSlider" min="1" max="3" step="1" value="2" />
+    <span id="speed-label">Normal</span>
+  </div>
+
+  <!-- MAIN CONTROLS -->
   <div class="controls">
     <button id="startBtn">▶ Start</button>
     <button id="stopBtn" disabled>⏹ Stop</button>
     <button id="prevBtn">⏪ Previous</button>
+    <button id="resetBtn">🔁 Reset</button>
   </div>
 
+  <div class="toggle-wrapper">
+    <label for="voiceToggle">🔊 Voice narration</label>
+    <input type="checkbox" id="voiceToggle" checked />
+  </div>
+
+  <!-- PANELS -->
+  <div class="bottom-panels">
+    <div id="narration-panel">
+      <h3>Auto-Narration</h3>
+      <div id="current-narration"><strong>Current:</strong> None yet — starting soon.</div>
+      <div id="next-narration"><strong>Next:</strong> Indian Heritage Centre</div>
+    </div>
+
+    <div id="checkpoints-panel">
+      <h3>Milestone Checkpoints</h3>
+      <ul id="checkpoint-list"></ul>
+    </div>
+  </div>
+
+  <!-- MINI MAP -->
+  <div id="mini-map-container">
+    <div id="mini-map-title">Mini Overview</div>
+    <div id="mini-map"></div>
+  </div>
+
+  <audio id="narrationPlayer"></audio>
+
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="js/engine.js"></script>
   <script>
-    const map = L.map('map').setView([1.290270, 103.851959], 14);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+    const ROUTE_CONFIG = {
+      heading: "🚗 Singapore Route Tracker – Clive Street to Sultan Gate",
+      initialView: { lat: 1.3035, lng: 103.8560, zoom: 15 },
+      audioBasePath: "audio/",
 
-    // -----------------------------
-    // ROUTE COORDINATES (with notes)
-    // -----------------------------
-    const route = [
-      [1.3055706430521505, 103.85240339783635], // Clive St 1 / Indian Heritage Centre
-      [1.305934120873837, 103.8528587469299], // Clive St 2
-      [1.3061429920775036, 103.85298155045955], // Clive St 3 / Dickson Rd 1
-      [1.305921365379919, 103.85337866836709], // Dickson Rd 2
-      [1.305454637220959, 103.85392017459763], // Dickson Rd 3
-      [1.3051344450236089, 103.85433066831084], // Dickson Rd 4
-      [1.3047420967825416, 103.85486521232201], // Dickson Rd 5 / Jln Besar 1
-      [1.3041377901598352, 103.85448629504549], // Jln Besar 2
-      [1.3034545627309106, 103.85403069213372], // Jln Besar 3 / Ophir Rd 1
-      // [1.3057904601061157, 103.85269826065314], // Clive St 2 / Dunlop St 1
-      // [1.3054837971983306, 103.8530456014874], // Dunlop St 2
-      // [1.3049957062130086, 103.85356545270612], // Dunlop St 3
-      // [1.3043280093198746, 103.85428964914566], // Dunlop St 4
-      // [1.304711465790195, 103.85486364187919], // Dunlop St 5 / Jln Besar 1
-      // [1.304389684140718, 103.8546571117835], // Jln Besar 2
-      // [1.30393650822545, 103.85434329333155], // Jln Besar 3
-      // [1.3034699246766042, 103.85404556812865], // Jln Besar 4 / Ophir Rd 1
-      [1.3032232252939973, 103.85461956086219], // Ophir Rd 2
-      [1.3029818889029505, 103.85563880028222], // Ophir Rd 3
-      [1.302619884295707, 103.85610550465437], // Ophir Rd 4
-      [1.3022337459775828, 103.8570576888557], // Ophir Rd 5
-      [1.30102265564438, 103.85821661352415], // Ophir Rd 6
-      [1.3004234819033342, 103.85889559925884], // Ophir Rd 7
-      [1.299878071330309, 103.85936225277138], // Ophir Rd 8 / Beach Rd 1
-      [1.3009664440149735, 103.86090609184409], // Beach Rd 2 / Sultan Gate
-      [1.3011939783147968, 103.86133093208029], // Sultan Gate Coach Bay
+      // ROUTE 1.3 COORDS (Clive St → Sultan Gate Coach Bay)
+      route: [
+        [1.3055706430521505, 103.85240339783635], // Clive St / Indian Heritage Centre
+        [1.305934120873837, 103.8528587469299],   // Clive St 2
+        [1.3061429920775036, 103.85298155045955], // Clive St 3 / Dickson Rd 1
+        [1.305921365379919, 103.85337866836709],  // Dickson Rd 2
+        [1.305454637220959, 103.85392017459763],  // Dickson Rd 3
+        [1.3051344450236089, 103.85433066831084], // Dickson Rd 4
+        [1.3047420967825416, 103.85486521232201], // Dickson Rd 5 / Jalan Besar
+        [1.3041377901598352, 103.85448629504549], // Jalan Besar 2
+        [1.3034545627309106, 103.85403069213372], // Jalan Besar 3 / Ophir Rd
+        [1.3032232252939973, 103.85461956086219], // Ophir Rd 2
+        [1.3029818889029505, 103.85563880028222], // Ophir Rd 3
+        [1.302619884295707, 103.85610550465437],  // Ophir Rd 4
+        [1.3022337459775828, 103.8570576888557],  // Ophir Rd 5
+        [1.30102265564438, 103.85821661352415],   // Ophir Rd 6
+        [1.3004234819033342, 103.85889559925884], // Ophir / Beach Rd corner
+        [1.299878071330309, 103.85936225277138],  // Beach Rd / Haji Lane area
+        [1.3009664440149735, 103.86090609184409], // Beach Rd 2 / near Sultan Gate
+        [1.3011939783147968, 103.86133093208029]  // Sultan Gate Coach Bay
+      ],
 
-
-
-
-    ];
-
-    const polyline = L.polyline(route, { color: 'blue', weight: 5 }).addTo(map);
-
-    // -----------------------------
-    // LANDMARKS
-    // -----------------------------
-    const landmarks = [
-      { name: "Church of the True Light", coords: [1.3053701075687334, 103.85403818753099], remark: "Dickson Rd. (Right) Landmark: Church of the True Light" },
-      { name: "Sim Lim Tower", coords: [1.3037862424423137, 103.85483601836982], remark: "Ophir Rd. (Left) Landmark: Sim Lim Tower" },
-      { name: "Rochor River", coords: [1.3036808676038605, 103.85513095275853], remark: "Ophir Rd. (Left) Landmark: Rochor River" },
-      { name: "Church of Our Lady of Lourdes", coords: [1.3031873833445735, 103.85614300202805], remark: "Ophir Rd. (Right) Landmark: Church of Our Lady of Lourdes"},
-      { name: "Raffles Hospital", coords: [1.301741888201061, 103.85710922302592], remark: "Ophir Rd. (Right) Landmark: Raffles Hospital" },
-      { name: "Haji Lane", coords: [1.3001809363540588, 103.85955202660811], remark: "Haji Lane. (Left) Landmark: Haji Lane"},
-      { name: "Bussorrah St", coords: [1.3013899872181605, 103.85980464092408], remark: "Bussorrah St. (Right) Landmark: Bussorrah St" },
-      { name: "Istana Kampong Glam", coords: [1.3029100219568073, 103.86003608093964], remark: "Beach Rd. (Left) Istana Kampong Glam" },
-
-
-
-    ];
-
-    landmarks.forEach(lm => L.marker(lm.coords).addTo(map).bindPopup(lm.name));
-
-    // -----------------------------
-    // CAR MARKER + MOVEMENT
-    // -----------------------------
-    const carIcon = L.icon({
-      iconUrl: 'https://cdn-icons-png.flaticon.com/512/854/854894.png',
-      iconSize: [35, 35]
-    });
-    const car = L.marker(route[0], { icon: carIcon }).addTo(map);
-
-    let i = 0;
-    let running = false;
-    let timer;
-
-    function moveCar() {
-      if (!running) return;
-      if (i < route.length) {
-        car.setLatLng(route[i]);
-        const nearbyLandmark = landmarks.find(l =>
-          !l.shown &&
-          Math.abs(l.coords[0] - route[i][0]) < 0.0008 &&
-          Math.abs(l.coords[1] - route[i][1]) < 0.0008
-        );
-        if (nearbyLandmark) {
-          document.getElementById("remark-box").innerText = nearbyLandmark.remark;
-          nearbyLandmark.shown = true;
-        } else {
-          document.getElementById("remark-box").innerText = "Moving to next point...";
+      landmarks: [
+        {
+          name: "Indian Heritage Centre",
+          coords: [1.3057475789552717, 103.85216589564395],
+          remark: "We begin near the Indian Heritage Centre, celebrating the history and culture of the Indian community in Singapore.",
+          audioId: "indian_heritage_centre"
+        },
+        {
+          name: "Little India Arcade",
+          coords: [1.3059, 103.8531],
+          remark: "On your right is Little India Arcade, a cluster of restored shophouses filled with colourful shops and snacks.",
+          audioId: "little_india_arcade"
+        },
+        {
+          name: "Church of the True Light",
+          coords: [1.3053701075687334, 103.85403818753099],
+          remark: "Along Dickson Road, the Church of the True Light serves the local Teochew-speaking Christian community.",
+          audioId: "church_true_light"
+        },
+        {
+          name: "Jalan Besar Streetscape",
+          coords: [1.3043, 103.8546],
+          remark: "Jalan Besar features a mix of conserved shophouses and modern buildings, once known for workshops and trades.",
+          audioId: "jalan_besar_streetscape"
+        },
+        {
+          name: "Sim Lim Tower",
+          coords: [1.3037862424423137, 103.85483601836982],
+          remark: "On your left is Sim Lim Tower, a long-time landmark for electrical and electronic components.",
+          audioId: "sim_lim_tower"
+        },
+        {
+          name: "Rochor Canal / Rochor River",
+          coords: [1.3036808676038605, 103.85513095275853],
+          remark: "You are crossing near the Rochor Canal, once prone to flooding and now part of a beautifully upgraded waterway.",
+          audioId: "rochor_canal"
+        },
+        {
+          name: "Church of Our Lady of Lourdes",
+          coords: [1.3031873833445735, 103.85614300202805],
+          remark: "On your right stands the Church of Our Lady of Lourdes, serving many migrants and workers over the decades.",
+          audioId: "our_lady_of_lourdes"
+        },
+        {
+          name: "Raffles Hospital",
+          coords: [1.301741888201061, 103.85710922302592],
+          remark: "To your right is Raffles Hospital, one of Singapore’s major private hospitals.",
+          audioId: "raffles_hospital"
+        },
+        {
+          name: "The Gateway Towers",
+          coords: [1.3009, 103.8583],
+          remark: "Ahead you can spot The Gateway, two striking modern office towers designed by architect I. M. Pei.",
+          audioId: "gateway_towers"
+        },
+        {
+          name: "Golden Landmark / Beach Road Shops",
+          coords: [1.3005, 103.8591],
+          remark: "This Beach Road stretch is lined with shops, hotels and malls serving the Bugis and Kampong Glam area.",
+          audioId: "golden_landmark"
+        },
+        {
+          name: "Haji Lane",
+          coords: [1.3001809363540588, 103.85955202660811],
+          remark: "On your left is Haji Lane, famous for its vibrant murals, indie boutiques and café culture.",
+          audioId: "haji_lane"
+        },
+        {
+          name: "Bussorah Street",
+          coords: [1.3013899872181605, 103.85980464092408],
+          remark: "On your right lies Bussorah Street, a pedestrian-friendly street leading directly towards Sultan Mosque.",
+          audioId: "bussorah_street"
+        },
+        {
+          name: "Sultan Mosque (Masjid Sultan)",
+          coords: [1.3021, 103.8599],
+          remark: "Dominating the skyline is Sultan Mosque, the spiritual heart of Kampong Glam with its golden dome.",
+          audioId: "sultan_mosque"
+        },
+        {
+          name: "Malay Heritage Centre / Istana Kampong Glam",
+          coords: [1.3029100219568073, 103.86003608093964],
+          remark: "On your left is the Malay Heritage Centre, housed in the former royal palace of the Sultan of Johor.",
+          audioId: "malay_heritage_centre"
+        },
+        {
+          name: "Sultan Gate Coach Bay",
+          coords: [1.3011939783147968, 103.86133093208029],
+          remark: "We arrive at Sultan Gate coach bay, a convenient drop-off point to explore the charming Kampong Glam district on foot.",
+          audioId: "sultan_gate_arrival"
         }
-        i++;
-        timer = setTimeout(moveCar, 1500);
-      } else {
-        document.getElementById("remark-box").innerText = "🏁 Route completed!";
-        document.getElementById("startBtn").disabled = false;
-        document.getElementById("stopBtn").disabled = true;
-      }
-    }
+      ],
 
-    // -----------------------------
-    // BUTTON LOGIC
-    // -----------------------------
-    document.getElementById("startBtn").addEventListener("click", () => {
-      if (!running) {
-        landmarks.forEach(l => delete l.shown);
-        running = true;
-        document.getElementById("startBtn").disabled = true;
-        document.getElementById("stopBtn").disabled = false;
-        moveCar();
-      }
-    });
+      trafficLights: [
+        {
+          name: "Clive St / Dickson Rd Junction",
+          coords: [1.3060, 103.8530],
+          cycle: { green: 22, amber: 3, red: 33 },
+          offset: 0
+        },
+        {
+          name: "Dickson Rd / Jalan Besar Junction",
+          coords: [1.3050, 103.8548],
+          cycle: { green: 24, amber: 3, red: 36 },
+          offset: 8
+        },
+        {
+          name: "Jalan Besar / Ophir Rd Junction",
+          coords: [1.3034545627309106, 103.85403069213372],
+          cycle: { green: 26, amber: 3, red: 38 },
+          offset: 12
+        },
+        {
+          name: "Ophir Rd / Beach Rd Junction",
+          coords: [1.3004234819033342, 103.85889559925884],
+          cycle: { green: 20, amber: 3, red: 32 },
+          offset: 5
+        },
+        {
+          name: "Beach Rd / Sultan Gate Junction",
+          coords: [1.3009664440149735, 103.86090609184409],
+          cycle: { green: 21, amber: 3, red: 34 },
+          offset: 10
+        }
+      ]
+    };
 
-    document.getElementById("stopBtn").addEventListener("click", () => {
-      running = false;
-      clearTimeout(timer);
-      document.getElementById("startBtn").disabled = false;
-      document.getElementById("stopBtn").disabled = true;
-      document.getElementById("remark-box").innerText = "⏹ Route paused.";
-    });
-
-    document.getElementById("prevBtn").addEventListener("click", () => {
-      if (i > 1) {
-        i -= 2;
-        car.setLatLng(route[i]);
-        const nearbyLandmark = landmarks.find(l =>
-          Math.abs(l.coords[0] - route[i][0]) < 0.0009 &&
-          Math.abs(l.coords[1] - route[i][1]) < 0.0009
-        );
-        document.getElementById("remark-box").innerText =
-          nearbyLandmark ? nearbyLandmark.remark : "Moved to previous point.";
-      } else {
-        document.getElementById("remark-box").innerText = "Already at start point.";
-      }
-    });
+    initRoute(ROUTE_CONFIG);
   </script>
 </body>
 </html>
