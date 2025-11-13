@@ -615,6 +615,9 @@
       if (!running) return;
       if (currentIndex >= route.length - 1) {
         remarkBox.innerText = "🏁 Route completed!";
+        document.getElementById("progress-bar").style.width = "100%";
+        document.getElementById("progress-text").innerText = "Progress: 100%";
+
         document.getElementById("startBtn").disabled = false;
         document.getElementById("stopBtn").disabled = true;
         running = false;
