@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Route 1.1</title>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Route 1 – City Heritage to Telok Ayer</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     body {
@@ -12,8 +13,22 @@
       background: #f0f8ff;
       text-align: center;
     }
+    .back-link {
+      display: inline-block;
+      margin: 10px;
+      padding: 8px 14px;
+      background: #0077b6;
+      color: #fff;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 500;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .back-link:hover {
+      background-color: #005f87;
+    }
     h2 {
-      margin: 12px;
+      margin: 4px 12px 2px;
       font-size: 1.2em;
     }
     #map {
@@ -33,14 +48,19 @@
       margin-left: auto;
       margin-right: auto;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      min-height: 2.4em;
     }
     .controls {
       margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px;
     }
     button {
       padding: 8px 18px;
-      font-size: 1em;
-      margin: 5px;
+      font-size: 0.95em;
+      margin: 5px 3px;
       border: none;
       border-radius: 6px;
       background-color: #0077b6;
@@ -55,48 +75,84 @@
       background-color: #a0c4ff;
       cursor: not-allowed;
     }
+    .toggle-wrapper {
+      margin-top: 6px;
+      font-size: 0.9em;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+    }
+    .toggle-wrapper input[type="checkbox"] {
+      transform: scale(1.1);
+      cursor: pointer;
+    }
     @media (min-width: 768px) {
       h2 { font-size: 1.5em; }
       #map { height: 75vh; width: 90%; }
-      #remark-box { font-size: 1.1em; width: 80%; }
+      #remark-box { font-size: 1.05em; width: 80%; }
     }
   </style>
 </head>
-<a href="index.html"
-   style="display:inline-block;margin:10px;padding:8px 14px;background:#0077b6;color:#fff;
-          border-radius:6px;text-decoration:none;font-weight:500;">
-  ⬅ Back to Home
-</a>
-
 <body>
-  <h2>🚗 Singapore Route Tracker</h2>
+
+  <a href="index.html" class="back-link">⬅ Back to Home</a>
+
+  <h2>🚗 Singapore Route Tracker – Coleman St to Thian Hock Keng</h2>
+
   <div id="map"></div>
+
   <div id="remark-box">Start of the route...</div>
+
+<!-- TRAFFIC LIGHT LEGEND -->
+  <div id="legend-box">
+    <strong>Traffic Lights</strong><br>
+    <span class="light red"></span> Red – Stop<br>
+    <span class="light amber"></span> Amber – Prepare to Stop<br>
+    <span class="light green"></span> Green – Moving
+  </div>
+
+<!-- PROGRESS BAR -->
+<div id="progress-container">
+  <div id="progress-bar"></div>
+</div>
+<div id="progress-text">Progress: 0%</div>
+
   <div class="controls">
     <button id="startBtn">▶ Start</button>
     <button id="stopBtn" disabled>⏹ Stop</button>
     <button id="prevBtn">⏪ Previous</button>
+    <button id="resetBtn">🔁 Reset</button>
   </div>
+
+  <div class="toggle-wrapper">
+    <label for="voiceToggle">🔊 Voice narration</label>
+    <input type="checkbox" id="voiceToggle" checked />
+  </div>
+
+  <!-- Single audio player reused for all narrations -->
+  <audio id="narrationPlayer"></audio>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
+    // -----------------------------
+    // MAP INITIALISATION
+    // -----------------------------
     const map = L.map('map').setView([1.290270, 103.851959], 14);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
+    const remarkBox = document.getElementById("remark-box");
+
     // -----------------------------
-    // ROUTE COORDINATES (with notes)
+    // ROUTE COORDINATES (unchanged)
     // -----------------------------
     const route = [
       [1.2928, 103.8489], // Coleman St 1
       [1.2927, 103.8491], // Coleman St 2
       [1.2925, 103.8495], // Coleman St 3 / Hill St 1
-      //[1.2930, 103.8496], // Hill St 2
-      //[1.2931, 103.8497], // Hill St 3
       [1.2932, 103.8498], // Hill St 3.5
-      //[1.2939, 103.8502], // Hill St 4
-      //[1.2943, 103.8505], // Hill St 5
       [1.2946, 103.8506], // Victoria St 1
       [1.2955, 103.8513], // Victoria St 2
       [1.2957, 103.8515], // Victoria St 
@@ -182,55 +238,281 @@
       [1.2806, 103.8475], // Telok Ayer St 2 / End at Thian Hock Keng Temple
     ];
 
+    // Draw the polyline on map
     const polyline = L.polyline(route, { color: 'blue', weight: 5 }).addTo(map);
+    map.fitBounds(polyline.getBounds());
 
     // -----------------------------
-    // LANDMARKS
+    // LANDMARKS + TEXT NARRATION
     // -----------------------------
     const landmarks = [
-      { name: "Central Fire Station", coords: [1.2922, 103.8492], remark: "Coleman St. (Right) Central Fire Station; (Left) Armenian Church" },
-      { name: "Armenian Church", coords: [1.2930, 103.8495], remark: "Hill St. (Left) Armenian Church!" },
-      { name: "Singapore Chinese Chamber of Commerce", coords: [1.2933, 103.8501], remark: "Hill St. (Right) Singapore Chinese Chamber of Commerce"},
-      { name: "Kempinski Hotel", coords: [1.2941, 103.8508], remark: "Hill St. (Right) Kempinski Hotel!" },
-      { name: "Singapore Management University (SMU)", coords: [1.2950, 103.8506], remark: "Victoria St. (Left) Singapore Management University" },
-      { name: "Cathedral of the Good Shepherd", coords: [1.2959, 103.8513], remark: "Victoria St. (Left) Cathedral of the Good Shepherd; Right: CHIJMES" },
-      { name: "CHIJMES", coords: [1.29534446176375, 103.85191362475821], remark: "Victoria St. (Right) CHIJMES!"},
-      { name: "Bras Basah Complex", coords: [1.2966633620576473, 103.8537043934213], remark: "Victoria St. (Right) Bras Basah Complex!"},
-
-      { name: "St Joseph's Church", coords: [1.2984351315280636, 103.85313494735979], remark: "Victoria St. (Left) St Joseph's Church!"},
-      { name: "National Design Centre", coords: [1.2984, 103.8536], remark: "Victoria St. (Left) National Design Centre; (Right) National Library" },
-      { name: "National Library of Singapore", coords: [1.2976, 103.8542], remark: "Middle Road. (Right) National Library of Singapore!" },
-      { name: "Raffles Hotel", coords: [1.2950, 103.8534], remark: "North Bridge Rd. (Left) Passing Raffles Hotel!" },
-      { name: "St Andrew's Cathedral", coords: [1.2924, 103.8522], remark: "North Bridge Rd. (Left) St Andrew's Cathedral!" },
-      { name: "Supreme Court", coords: [1.2905, 103.8508], remark: "North Bridge Rd. (Left) Supreme Court!" },
-      { name: "Parliament Place", coords: [1.290079, 103.850166], remark: "Turning to Parliament Place!"},
-      { name: "National Gallery Singapore", coords: [1.2902, 103.8516], remark: "St Andrew's Rd. (Left) National Gallery Singapore!; (Right) Padang"},
-      { name: "The Padang", coords: [1.2907, 103.8528], remark: "Passing the Padang!"},
-      { name: "Singapore Recreation Club", coords: [1.2921, 103.8536], remark: "St Andrew's Rd. (Right) Singapore Recreation Club!"},
-      { name: "Civilian War Memorial", coords: [1.2928, 103.8546], remark: "Beach Rd. (Right) Civilian War Memorial!"},
-      { name: "Raffles Hotel", coords: [1.2949, 103.8544], remark: "Beach Rd. (Left) Passing Raffles Hotel again!"},
-
-      { name: "Bugis Street", coords: [1.3008441018427344, 103.8554553564729], remark: "North Bridge Rd. (Right) Bugis Street!"},
-
-      { name: "Elgin Bridge", coords: [1.289106349496725, 103.84928087367207], remark: "Crossing Elgin Bridge!"},
-
-      { name: "Shophouses on South Bridge Rd", coords: [1.2877, 103.8486], remark: "South Bridge Rd. (Left) Beautiful shophouses!"},
-      { name: "Hong Lim Park", coords: [1.286441677699584, 103.84726628162626], remark: "South Bridge Rd. (Right) Hong Lim Park!"},
-      { name: "Sook Ching Inspection Centre", coords: [1.2838687213489226, 103.84602593659656], remark: "South Bridge Rd. (Left) Sook Ching Inspection Centre"},
-      { name: "Jamae Chulia Mosque", coords: [1.283135410816041, 103.84557499125049], remark: "South Bridge Rd. (Right) Jamae Chulia Mosque!"},
-      { name: "Sri Mariamman Tmeple", coords: [1.2826974041460475, 103.84521463569506], remark: "South Bridge Rd. (Right) Sri Mariamman Temple!"},
-      { name: "Buddha Tooth Relic Temple", coords: [1.281276211219877, 103.84448897213257], remark: "South Bridge Rd. {Right) Buddha Tooth Relic Temple!"},
-      { name: "Maxwell Food Centre", coords: [1.2803875417995898, 103.84475899768184], remark: "Kadayanallur Rd. (Right) Maxwell Food Centre!"},
-      { name: "Urban Redevelopment Authority", coords: [1.2798925402672132, 103.84501331341875], remark: "Kadayanallur Rd. (Left) Urban Redevelopment Authority!"},
-      //{ name: "Amoy Street Food Centre", coords: [1.2794789718115431, 103.84653266311413], remark: "Telok Ayer St. (Left) Amoy Street Food Centre!"},
-
-      { name: "Thian Hock Keng Temple", coords: [1.2810248381294773, 103.8476550471662], remark: "Arrived at Thian Hock Keng Temple!"}
+      {
+        name: "Central Fire Station",
+        coords: [1.2922, 103.8492],
+        remark: "On your right is the Central Fire Station, one of Singapore’s oldest fire stations with its distinctive red-and-white façade.",
+        audioId: "central_fire_station"
+      },
+      {
+        name: "Armenian Church",
+        coords: [1.2930, 103.8495],
+        remark: "On your left is the Armenian Church, the oldest Christian church in Singapore, completed in 1835.",
+        audioId: "armenian_church"
+      },
+      {
+        name: "Singapore Chinese Chamber of Commerce",
+        coords: [1.2933, 103.8501],
+        remark: "To your right, the Singapore Chinese Chamber of Commerce and Industry, an important voice for the local Chinese business community.",
+        audioId: "sccci"
+      },
+      {
+        name: "Kempinski Hotel",
+        coords: [1.2941, 103.8508],
+        remark: "On the right is The Capitol Kempinski Hotel, housed in beautifully restored historic buildings.",
+        audioId: "kempinski"
+      },
+      {
+        name: "Singapore Management University (SMU)",
+        coords: [1.2950, 103.8506],
+        remark: "On your left is Singapore Management University, a city campus integrated directly into the civic district.",
+        audioId: "smu"
+      },
+      {
+        name: "Cathedral of the Good Shepherd",
+        coords: [1.2959, 103.8513],
+        remark: "To your left, the Cathedral of the Good Shepherd, the oldest Roman Catholic church in Singapore. On the right you can see CHIJMES.",
+        audioId: "good_shepherd"
+      },
+      {
+        name: "CHIJMES",
+        coords: [1.29534446176375, 103.85191362475821],
+        remark: "On your right is CHIJMES, a former convent school turned lifestyle and dining complex, with a beautiful Gothic-style chapel.",
+        audioId: "chijmes"
+      },
+      {
+        name: "Bras Basah Complex",
+        coords: [1.2966633620576473, 103.8537043934213],
+        remark: "On your right is Bras Basah Complex, once famous as a haven for second-hand bookstores and stationery shops.",
+        audioId: "bras_basah"
+      },
+      {
+        name: "St Joseph's Church",
+        coords: [1.2984351315280636, 103.85313494735979],
+        remark: "On your left stands St Joseph’s Church, a Catholic church with strong Eurasian heritage.",
+        audioId: "st_joseph"
+      },
+      {
+        name: "National Design Centre",
+        coords: [1.2984, 103.8536],
+        remark: "Ahead on the left is the National Design Centre, a hub for design exhibitions and creative events. On the right is the National Library.",
+        audioId: "national_design_centre"
+      },
+      {
+        name: "National Library of Singapore",
+        coords: [1.2976, 103.8542],
+        remark: "On your right is the National Library of Singapore, a modern landmark for readers and researchers.",
+        audioId: "national_library"
+      },
+      {
+        name: "Raffles Hotel",
+        coords: [1.2950, 103.8534],
+        remark: "On your left is the iconic Raffles Hotel, opened in 1887 and famous for the Singapore Sling cocktail.",
+        audioId: "raffles_hotel"
+      },
+      {
+        name: "St Andrew's Cathedral",
+        coords: [1.2924, 103.8522],
+        remark: "On your left is St Andrew’s Cathedral, a striking white Anglican cathedral with a long history in Singapore.",
+        audioId: "st_andrew"
+      },
+      {
+        name: "Supreme Court",
+        coords: [1.2905, 103.8508],
+        remark: "On your left is the new Supreme Court building, linked architecturally to the former City Hall and Old Supreme Court nearby.",
+        audioId: "supreme_court"
+      },
+      {
+        name: "National Gallery Singapore",
+        coords: [1.2902, 103.8516],
+        remark: "On your left, National Gallery Singapore, housing the world’s largest public collection of modern Southeast Asian art. On the right is the Padang.",
+        audioId: "national_gallery"
+      },
+      {
+        name: "The Padang",
+        coords: [1.2907, 103.8528],
+        remark: "You’re passing the Padang, a historic playing field that has hosted parades, celebrations and key moments in Singapore’s history.",
+        audioId: "padang"
+      },
+      {
+        name: "Singapore Recreation Club",
+        coords: [1.2921, 103.8536],
+        remark: "On your right is the Singapore Recreation Club, founded in the 19th century as a social and sports club.",
+        audioId: "src"
+      },
+      {
+        name: "Civilian War Memorial",
+        coords: [1.2928, 103.8546],
+        remark: "On your right, the Civilian War Memorial, honouring civilians who perished during the Second World War.",
+        audioId: "civilian_war_memorial"
+      },
+      {
+        name: "Bugis Street",
+        coords: [1.3008441018427344, 103.8554553564729],
+        remark: "To your right is Bugis Street, once a lively night market and today a popular shopping area.",
+        audioId: "bugis_street"
+      },
+      {
+        name: "Elgin Bridge",
+        coords: [1.289106349496725, 103.84928087367207],
+        remark: "You’re crossing Elgin Bridge, a historic river crossing linking the civic district with Chinatown.",
+        audioId: "elgin_bridge"
+      },
+      {
+        name: "Shophouses on South Bridge Rd",
+        coords: [1.2877, 103.8486],
+        remark: "Look to your left at the conserved shophouses along South Bridge Road, showing different architectural styles and eras.",
+        audioId: "south_bridge_shophouses"
+      },
+      {
+        name: "Hong Lim Park",
+        coords: [1.286441677699584, 103.84726628162626],
+        remark: "On your right is Hong Lim Park, Singapore’s designated Speakers’ Corner.",
+        audioId: "hong_lim_park"
+      },
+      {
+        name: "Sook Ching Inspection Centre",
+        coords: [1.2838687213489226, 103.84602593659656],
+        remark: "On your left, this stretch is associated with the Sook Ching inspection centre, linked to a tragic chapter during the Japanese Occupation.",
+        audioId: "sook_ching"
+      },
+      {
+        name: "Jamae Chulia Mosque",
+        coords: [1.283135410816041, 103.84557499125049],
+        remark: "On your right is Jamae Chulia Mosque, serving the Tamil Muslim community since the early 19th century.",
+        audioId: "jamae_mosque"
+      },
+      {
+        name: "Sri Mariamman Temple",
+        coords: [1.2826974041460475, 103.84521463569506],
+        remark: "On your right is Sri Mariamman Temple, the oldest Hindu temple in Singapore, famous for its colourful gopuram, or entrance tower.",
+        audioId: "sri_mariamman"
+      },
+      {
+        name: "Buddha Tooth Relic Temple",
+        coords: [1.281276211219877, 103.84448897213257],
+        remark: "On your right is the Buddha Tooth Relic Temple and Museum, built in a Tang-style inspired architecture.",
+        audioId: "buddha_tooth_relic"
+      },
+      {
+        name: "Maxwell Food Centre",
+        coords: [1.2803875417995898, 103.84475899768184],
+        remark: "On your right is Maxwell Food Centre, a beloved hawker centre where locals queue for chicken rice and many other dishes.",
+        audioId: "maxwell_food_centre"
+      },
+      {
+        name: "Urban Redevelopment Authority",
+        coords: [1.2798925402672132, 103.84501331341875],
+        remark: "On your left is the Urban Redevelopment Authority, responsible for Singapore’s long-term land use and city planning.",
+        audioId: "ura"
+      },
+      {
+        name: "Thian Hock Keng Temple",
+        coords: [1.2810248381294773, 103.8476550471662],
+        remark: "We have arrived at Thian Hock Keng Temple on Telok Ayer Street, one of Singapore’s oldest Hokkien temples, dedicated to the sea goddess Mazu.",
+        audioId: "thian_hock_keng"
+      }
     ];
 
-    landmarks.forEach(lm => L.marker(lm.coords).addTo(map).bindPopup(lm.name));
+    // Add landmark markers
+    landmarks.forEach(lm => {
+      L.marker(lm.coords).addTo(map).bindPopup(lm.name);
+    });
 
     // -----------------------------
-    // CAR MARKER + MOVEMENT
+    // TRAFFIC LIGHTS (real-world style cycle)
+    // -----------------------------
+    const trafficLights = [
+      {
+        name: "Coleman St / Hill St Junction",
+        coords: [1.2925, 103.8495],
+        cycle: { green: 25, amber: 3, red: 35 },
+        offset: 0
+      },
+      {
+        name: "Hill St / Victoria St Junction",
+        coords: [1.2946, 103.8506],
+        cycle: { green: 28, amber: 3, red: 40 },
+        offset: 10
+      },
+      {
+        name: "Victoria St / Middle Rd Junction",
+        coords: [1.2984, 103.8542],
+        cycle: { green: 22, amber: 3, red: 33 },
+        offset: 18
+      },
+      {
+        name: "Middle Rd / North Bridge Rd Junction",
+        coords: [1.2974, 103.8548],
+        cycle: { green: 24, amber: 3, red: 36 },
+        offset: 5
+      },
+      {
+        name: "North Bridge Rd / Elgin Bridge",
+        coords: [1.2893, 103.8494],
+        cycle: { green: 26, amber: 3, red: 38 },
+        offset: 12
+      },
+      {
+        name: "Cross St / Telok Ayer St",
+        coords: [1.2821, 103.8484],
+        cycle: { green: 20, amber: 3, red: 32 },
+        offset: 7
+      }
+    ];
+
+    let lightTimer = 0;
+
+    function getLightState(light, timer) {
+      const total = light.cycle.green + light.cycle.amber + light.cycle.red;
+      const t = (timer + (light.offset || 0)) % total;
+      if (t < light.cycle.green) return "green";
+      if (t < light.cycle.green + light.cycle.amber) return "amber";
+      return "red";
+    }
+
+    // Render traffic lights as small coloured circles
+    trafficLights.forEach(light => {
+      const marker = L.circleMarker(light.coords, {
+        radius: 6,
+        color: 'red',
+        fillColor: 'red',
+        fillOpacity: 0.9
+      }).addTo(map).bindPopup(light.name);
+      light.marker = marker;
+      light.state = "red";
+    });
+
+    // Update light colours every second
+    setInterval(() => {
+      lightTimer++;
+      trafficLights.forEach(light => {
+        const state = getLightState(light, lightTimer);
+        light.state = state;
+        const color =
+          state === "green" ? "green" :
+          state === "amber" ? "orange" : "red";
+        light.marker.setStyle({ color, fillColor: color });
+      });
+    }, 1000);
+
+    function getTrafficLightNear(position) {
+      return trafficLights.find(light =>
+        Math.abs(light.coords[0] - position[0]) < 0.0005 &&
+        Math.abs(light.coords[1] - position[1]) < 0.0005
+      );
+    }
+
+    // -----------------------------
+    // CAR MARKER + SMOOTH MOVEMENT
     // -----------------------------
     const carIcon = L.icon({
       iconUrl: 'https://cdn-icons-png.flaticon.com/512/854/854894.png',
@@ -238,69 +520,154 @@
     });
     const car = L.marker(route[0], { icon: carIcon }).addTo(map);
 
-    let i = 0;
+    let currentIndex = 0;    // index of current point in route
     let running = false;
-    let timer;
+    let moveTimer = null;
 
+    const narrationAudio = document.getElementById("narrationPlayer");
+    const voiceToggle = document.getElementById("voiceToggle");
+
+    function playNarrationFor(landmark) {
+      if (!voiceToggle.checked) return;
+      if (!landmark.audioId) return;
+      const src = `audio/${landmark.audioId}.mp3`; // You place files here
+      narrationAudio.src = src;
+      narrationAudio.play().catch(() => {
+        // ignore autoplay errors quietly
+      });
+    }
+
+    function handleLandmarksAt(position) {
+      const nearbyLandmark = landmarks.find(l =>
+        !l.shown &&
+        Math.abs(l.coords[0] - position[0]) < 0.0008 &&
+        Math.abs(l.coords[1] - position[1]) < 0.0008
+      );
+      if (nearbyLandmark) {
+        nearbyLandmark.shown = true;
+        remarkBox.innerText = nearbyLandmark.remark;
+        playNarrationFor(nearbyLandmark);
+      } else {
+        remarkBox.innerText = "Moving along the route...";
+      }
+    }
+
+    function clearMoveTimer() {
+      if (moveTimer) {
+        clearTimeout(moveTimer);
+        moveTimer = null;
+      }
+    }
+
+    // Smooth movement between route[currentIndex] and route[currentIndex+1]
     function moveCar() {
       if (!running) return;
-      if (i < route.length) {
-        car.setLatLng(route[i]);
-        const nearbyLandmark = landmarks.find(l =>
-          !l.shown &&
-          Math.abs(l.coords[0] - route[i][0]) < 0.0008 &&
-          Math.abs(l.coords[1] - route[i][1]) < 0.0008
-        );
-        if (nearbyLandmark) {
-          document.getElementById("remark-box").innerText = nearbyLandmark.remark;
-          nearbyLandmark.shown = true;
-        } else {
-          document.getElementById("remark-box").innerText = "Moving to next point...";
-        }
-        i++;
-        timer = setTimeout(moveCar, 1500);
-      } else {
-        document.getElementById("remark-box").innerText = "🏁 Route completed!";
+      if (currentIndex >= route.length - 1) {
+        remarkBox.innerText = "🏁 Route completed!";
         document.getElementById("startBtn").disabled = false;
         document.getElementById("stopBtn").disabled = true;
+        running = false;
+        return;
       }
+
+      const from = route[currentIndex];
+      const to = route[currentIndex + 1];
+      let progress = 0; // 0 → 1
+
+      const step = () => {
+        if (!running) return;
+
+        // Current interpolated position
+        const lat = from[0] + (to[0] - from[0]) * progress;
+        const lng = from[1] + (to[1] - from[1]) * progress;
+        const pos = [lat, lng];
+
+        // Check traffic light near this position
+        const light = getTrafficLightNear(pos);
+        if (light && (light.state === "red" || light.state === "amber")) {
+          remarkBox.innerText = `🛑 Red light at ${light.name}. Please wait...`;
+          moveTimer = setTimeout(step, 500); // Wait and check again
+          return;
+        }
+
+        car.setLatLng(pos);
+
+        progress += 0.02; // smaller = smoother/slower
+        if (progress >= 1) {
+          // Arrived at the next route point
+          currentIndex++;
+          const finalPos = route[currentIndex];
+          car.setLatLng(finalPos);
+          handleLandmarksAt(finalPos);
+          // Move on to the next segment
+          moveCar();
+        } else {
+          moveTimer = setTimeout(step, 60); // controls speed
+        }
+      };
+
+      step();
     }
 
     // -----------------------------
     // BUTTON LOGIC
     // -----------------------------
-    document.getElementById("startBtn").addEventListener("click", () => {
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const prevBtn = document.getElementById("prevBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    startBtn.addEventListener("click", () => {
       if (!running) {
-        landmarks.forEach(l => delete l.shown);
+        // Reset shown landmarks when starting fresh from point 0
+        if (currentIndex === 0) {
+          landmarks.forEach(l => delete l.shown);
+          remarkBox.innerText = "Starting the route. Look out for key landmarks along the way.";
+        } else {
+          remarkBox.innerText = "Resuming the route...";
+        }
         running = true;
-        document.getElementById("startBtn").disabled = true;
-        document.getElementById("stopBtn").disabled = false;
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
         moveCar();
       }
     });
 
-    document.getElementById("stopBtn").addEventListener("click", () => {
+    stopBtn.addEventListener("click", () => {
       running = false;
-      clearTimeout(timer);
-      document.getElementById("startBtn").disabled = false;
-      document.getElementById("stopBtn").disabled = true;
-      document.getElementById("remark-box").innerText = "⏹ Route paused.";
+      clearMoveTimer();
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+      remarkBox.innerText = "⏹ Route paused.";
     });
 
-    document.getElementById("prevBtn").addEventListener("click", () => {
-      if (i > 1) {
-        i -= 2;
-        car.setLatLng(route[i]);
-        const nearbyLandmark = landmarks.find(l =>
-          Math.abs(l.coords[0] - route[i][0]) < 0.0009 &&
-          Math.abs(l.coords[1] - route[i][1]) < 0.0009
-        );
-        document.getElementById("remark-box").innerText =
-          nearbyLandmark ? nearbyLandmark.remark : "Moved to previous point.";
+    prevBtn.addEventListener("click", () => {
+      // Move one point back (discrete jump, for quick review)
+      running = false;
+      clearMoveTimer();
+      if (currentIndex > 0) {
+        currentIndex--;
+        const pos = route[currentIndex];
+        car.setLatLng(pos);
+        remarkBox.innerText = "Moved to previous point.";
       } else {
-        document.getElementById("remark-box").innerText = "Already at start point.";
+        remarkBox.innerText = "Already at the start point.";
       }
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+    });
+
+    resetBtn.addEventListener("click", () => {
+      running = false;
+      clearMoveTimer();
+      currentIndex = 0;
+      car.setLatLng(route[0]);
+      landmarks.forEach(l => delete l.shown);
+      remarkBox.innerText = "Route reset. Press Start to begin again.";
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
     });
   </script>
 </body>
 </html>
+
