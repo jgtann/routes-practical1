@@ -91,6 +91,57 @@
       h2 { font-size: 1.5em; }
       #map { height: 75vh; width: 90%; }
       #remark-box { font-size: 1.05em; width: 80%; }
+
+  /* LEGEND */
+#legend-box {
+  position: fixed;
+  top: 20px;
+  right: 15px;
+  background: #ffffffcc;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.85em;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  text-align: left;
+  line-height: 1.4em;
+  z-index: 9999;
+}
+
+.light {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  margin-right: 6px;
+  border-radius: 50%;
+}
+
+.light.red { background: red; }
+.light.amber { background: orange; }
+.light.green { background: green; }
+
+/* PROGRESS BAR */
+#progress-container {
+  width: 90%;
+  height: 10px;
+  background: #e0e0e0;
+  border-radius: 6px;
+  margin: 15px auto 5px;
+  overflow: hidden;
+}
+
+#progress-bar {
+  width: 0%;
+  height: 100%;
+  background: #0077b6;
+  transition: width 0.2s linear;
+}
+
+#progress-text {
+  font-size: 0.9em;
+  color: #333;
+  margin-bottom: 10px;
+}
+
     }
   </style>
 </head>
