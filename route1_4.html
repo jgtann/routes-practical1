@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Route 1.4</title>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Route 1.4 – Sultan Gate Coach Bay (Kampong Glam) → Coleman St (Civic District)</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     body {
@@ -12,17 +13,35 @@
       background: #f0f8ff;
       text-align: center;
     }
+
+    .back-link {
+      display: inline-block;
+      margin: 10px;
+      padding: 8px 14px;
+      background: #0077b6;
+      color: #fff;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 500;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .back-link:hover {
+      background-color: #005f87;
+    }
+
     h2 {
-      margin: 12px;
+      margin: 4px 12px 2px;
       font-size: 1.2em;
     }
+
     #map {
-      height: 65vh;
+      height: 55vh;
       width: 95%;
       border-radius: 12px;
       margin: 5px auto;
       box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
+
     #remark-box {
       font-size: 1em;
       margin-top: 8px;
@@ -33,14 +52,21 @@
       margin-left: auto;
       margin-right: auto;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      min-height: 2.4em;
     }
+
     .controls {
       margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px;
     }
+
     button {
       padding: 8px 18px;
-      font-size: 1em;
-      margin: 5px;
+      font-size: 0.95em;
+      margin: 5px 3px;
       border: none;
       border-radius: 6px;
       background-color: #0077b6;
@@ -55,162 +81,371 @@
       background-color: #a0c4ff;
       cursor: not-allowed;
     }
+
+    .toggle-wrapper {
+      margin-top: 6px;
+      font-size: 0.9em;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+    }
+    .toggle-wrapper input[type="checkbox"] {
+      transform: scale(1.1);
+      cursor: pointer;
+    }
+
+    /* LEGEND */
+    #legend-box {
+      position: fixed;
+      top: 20px;
+      right: 15px;
+      background: #ffffffcc;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.85em;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      text-align: left;
+      line-height: 1.4em;
+      z-index: 9999;
+    }
+    .light {
+      display: inline-block;
+      width: 11px;
+      height: 11px;
+      margin-right: 6px;
+      border-radius: 50%;
+    }
+    .light.red { background: red; }
+    .light.amber { background: orange; }
+    .light.green { background: green; }
+
+    /* PROGRESS BAR */
+    #progress-container {
+      width: 90%;
+      height: 10px;
+      background: #e0e0e0;
+      border-radius: 6px;
+      margin: 15px auto 5px;
+      overflow: hidden;
+    }
+
+    #progress-bar {
+      width: 0%;
+      height: 100%;
+      background: #0077b6;
+      transition: width 0.2s linear;
+    }
+
+    #progress-text {
+      font-size: 0.9em;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    /* TIMER */
+    #timer-box {
+      margin-top: 8px;
+      font-size: 1.1em;
+      font-weight: 600;
+      color: #023e8a;
+    }
+
+    /* SPEED CONTROL */
+    #speed-control {
+      margin-top: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9em;
+    }
+    #speedSlider {
+      width: 160px;
+    }
+    #speed-label {
+      font-weight: 600;
+      color: #024b84;
+    }
+
+    /* LOWER PANELS */
+    .bottom-panels {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      width: 95%;
+      margin: 10px auto 20px;
+    }
+
+    #narration-panel, #checkpoints-panel {
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      padding: 10px 12px;
+      font-size: 0.9em;
+      text-align: left;
+      flex: 1 1 260px;
+      max-width: 360px;
+    }
+
+    #narration-panel h3,
+    #checkpoints-panel h3 {
+      margin: 0 0 6px;
+      font-size: 1em;
+      color: #023e8a;
+    }
+
+    #current-narration,
+    #next-narration {
+      margin: 3px 0;
+    }
+
+    #checkpoints-panel ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 4px 0 0;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    #checkpoints-panel li {
+      margin-bottom: 4px;
+      font-size: 0.88em;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .checkpoint-icon {
+      font-size: 0.9em;
+      width: 18px;
+      text-align: center;
+    }
+
+    .checkpoint.done {
+      color: green;
+      text-decoration: line-through;
+    }
+
+    /* MINI-MAP */
+    #mini-map-container {
+      position: fixed;
+      bottom: 15px;
+      right: 15px;
+      width: 180px;
+      height: 130px;
+      background: #ffffffcc;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      z-index: 9998;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #mini-map-title {
+      font-size: 0.8em;
+      padding: 4px 6px;
+      background: #0077b6;
+      color: #fff;
+      text-align: left;
+    }
+    #mini-map {
+      flex: 1;
+    }
+
     @media (min-width: 768px) {
       h2 { font-size: 1.5em; }
-      #map { height: 75vh; width: 90%; }
-      #remark-box { font-size: 1.1em; width: 80%; }
+      #map { height: 60vh; width: 90%; }
+      #remark-box { font-size: 1.05em; width: 80%; }
     }
   </style>
 </head>
-<a href="index.html"
-   style="display:inline-block;margin:10px;padding:8px 14px;background:#0077b6;color:#fff;
-          border-radius:6px;text-decoration:none;font-weight:500;">
-  ⬅ Back to Home
-</a>
-
 <body>
-  <h2>🚗 Singapore Route Tracker</h2>
+  <a href="index.html" class="back-link">⬅ Back to Home</a>
+
+  <h2>🚗 Route 1.4 – Sultan Gate Coach Bay (Kampong Glam) → Coleman St (Civic District)</h2>
+
   <div id="map"></div>
+
   <div id="remark-box">Start of the route...</div>
+
+  <!-- LEGEND -->
+  <div id="legend-box">
+    <strong>Traffic Lights</strong><br>
+    <span class="light red"></span> Red – Stop<br>
+    <span class="light amber"></span> Amber – Prepare to Stop<br>
+    <span class="light green"></span> Green – Moving
+  </div>
+
+  <!-- PROGRESS BAR -->
+  <div id="progress-container">
+    <div id="progress-bar"></div>
+  </div>
+  <div id="progress-text">Progress: 0%</div>
+
+  <!-- TIMER -->
+  <div id="timer-box">⏱ 00:00</div>
+
+  <!-- SPEED CONTROL -->
+  <div id="speed-control">
+    <span>Speed:</span>
+    <input type="range" id="speedSlider" min="1" max="3" step="1" value="2" />
+    <span id="speed-label">Normal</span>
+  </div>
+
+  <!-- MAIN CONTROLS -->
   <div class="controls">
     <button id="startBtn">▶ Start</button>
     <button id="stopBtn" disabled>⏹ Stop</button>
     <button id="prevBtn">⏪ Previous</button>
+    <button id="resetBtn">🔁 Reset</button>
   </div>
 
+  <div class="toggle-wrapper">
+    <label for="voiceToggle">🔊 Voice narration</label>
+    <input type="checkbox" id="voiceToggle" checked />
+  </div>
+
+  <!-- PANELS -->
+  <div class="bottom-panels">
+    <div id="narration-panel">
+      <h3>Auto-Narration</h3>
+      <div id="current-narration"><strong>Current:</strong> None yet — starting soon.</div>
+      <div id="next-narration"><strong>Next:</strong> Sultan Mosque</div>
+    </div>
+
+    <div id="checkpoints-panel">
+      <h3>Milestone Checkpoints</h3>
+      <ul id="checkpoint-list"></ul>
+    </div>
+  </div>
+
+  <!-- MINI MAP -->
+  <div id="mini-map-container">
+    <div id="mini-map-title">Mini Overview</div>
+    <div id="mini-map"></div>
+  </div>
+
+  <audio id="narrationPlayer"></audio>
+
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="js/engine.js"></script>
   <script>
-    const map = L.map('map').setView([1.290270, 103.851959], 14);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+    const ROUTE_CONFIG = {
+      heading: "🚗 Route 1.4 – Sultan Gate Coach Bay (Kampong Glam) → Coleman St (Civic District)",
+      initialView: { lat: 1.301, lng: 103.858, zoom: 15 },
+      audioBasePath: "audio/",
 
-    // -----------------------------
-    // ROUTE COORDINATES (with notes)
-    // -----------------------------
-    const route = [
-      [1.3019719568119799, 103.86097840551969], // Pahang St 1 / Coach Bay
-      [1.3021921318006835, 103.86131656799166], // Pahang St 2
-      [1.3024336140242334, 103.8617158270447], // Pahang St 3 / Jln Sultan
-      [1.3027589704029812, 103.86151621315311], // Jln Sultan 2
-      [1.3036638677580628, 103.86094066757698], // Jln Sultan 3
-      [1.3041510169336643, 103.86067343186431], // Jln Sultan 4 / North Bridge Rd 1
-      [1.3026508252363898, 103.8588381894594], // North Bridge Rd 2
-      [1.301746676206857, 103.85830947346517], // North Bridge Rd 3
-      [1.301273736585311, 103.85786423894369], // North Bridge Rd 4
-      [1.300502968871084, 103.85721989007781], // North Bridge Rd 5
-      [1.2999770255300898, 103.85673689001453], // North Bridge Rd 6
-      [1.2994610955417014, 103.85632745947683], // North Bridge Rd 7
-      [1.2987580659194466, 103.85579798341605], // North Bridge Rd 8
-      [1.2981545151648093, 103.85535011309592], // North Bridge Rd 9
-      [1.29666614393999, 103.85423702679229], // North Bridge Rd 10
-      [1.2952334118494924, 103.8532282923465], // North Bridge Rd 11
-      [1.295076020995443, 103.85312245146973], // North Bridge Rd / CHIJMES
-      [1.294569473503497, 103.85272891603553], // North Bridge Rd
-      [1.2938268648735123, 103.8522345371432], // North Bridge Rd
-      [1.2934776911869392, 103.85196398153528], // North Bridge Rd / St Andrews Cathedral
-      [1.292513774892528, 103.85134416322249], // North Bridge Rd / St Andrews Cathedral passing
-      [1.291785919488988, 103.85098014294358], // North Bridge Rd / Coleman St
-      [1.2921596831006381, 103.85023734480683], // Coleman St 1 end
+      // === ROUTE COORDINATES ===
+      route: [
+        [1.3019719568119799, 103.86097840551969], // Pahang St 1 / Coach Bay
+        [1.3021921318006835, 103.86131656799166], // Pahang St 2
+        [1.3024336140242334, 103.8617158270447],  // Pahang St 3 / Jln Sultan
+        [1.3027589704029812, 103.86151621315311], // Jln Sultan 2
+        [1.3036638677580628, 103.86094066757698], // Jln Sultan 3
+        [1.3041510169336643, 103.86067343186431], // Jln Sultan 4 / North Bridge Rd 1
+        [1.3026508252363898, 103.8588381894594],  // North Bridge Rd 2
+        [1.301746676206857,  103.85830947346517], // North Bridge Rd 3
+        [1.301273736585311,  103.85786423894369], // North Bridge Rd 4
+        [1.300502968871084,  103.85721989007781], // North Bridge Rd 5
+        [1.2999770255300898, 103.85673689001453], // North Bridge Rd 6
+        [1.2994610955417014, 103.85632745947683], // North Bridge Rd 7
+        [1.2987580659194466, 103.85579798341605], // North Bridge Rd 8
+        [1.2981545151648093, 103.85535011309592], // North Bridge Rd 9
+        [1.29666614393999,   103.85423702679229], // North Bridge Rd 10
+        [1.2952334118494924, 103.8532282923465],  // North Bridge Rd 11
+        [1.295076020995443,  103.85312245146973], // North Bridge Rd / CHIJMES
+        [1.294569473503497,  103.85272891603553], // North Bridge Rd
+        [1.2938268648735123, 103.8522345371432],  // North Bridge Rd
+        [1.2934776911869392, 103.85196398153528], // North Bridge Rd / St Andrews Cathedral
+        [1.292513774892528,  103.85134416322249], // North Bridge Rd / St Andrews passing
+        [1.291785919488988,  103.85098014294358], // North Bridge Rd / Coleman St
+        [1.2921596831006381, 103.85023734480683]  // Coleman St 1 end
+      ],
 
-
-
-    ];
-
-    const polyline = L.polyline(route, { color: 'blue', weight: 5 }).addTo(map);
-
-    // -----------------------------
-    // LANDMARKS
-    // -----------------------------
-    const landmarks = [
-      { name: "Sultan Mosque", coords: [1.30224743570944, 103.85890080056399], remark: "North Bridge Rd. (Left) Sultan Mosque" },
-      { name: "Raffles Hospital", coords: [1.3011894561476867, 103.85727159672437], remark: "North Bridge Rd. (Right) Raffles Hospital"},
-      { name: "Parkview Square", coords: [1.3002869924834568, 103.85769628005421], remark: "North Bridge Rd. (Left) Parkview Square"},
-      { name: "Raffles Hotel", coords: [1.2950178064775126, 103.85448051443812], remark: "North Bridge Rd. (Left) Raffles Hotel"},
-      { name: "CHIJMES", coords: [1.2949752033004305, 103.85280762312037], remark: "North Bridge Rd. (Right) CHIJMES"},
-      { name: "St. Andrew's Cathedral", coords: [1.2936478786221383, 103.8519780052222], remark: "North Bridge Rd. (Right) St. Andrew's Cathedral"},
-
-
-
-    
-
-
-    ];
-
-    landmarks.forEach(lm => L.marker(lm.coords).addTo(map).bindPopup(lm.name));
-
-    // -----------------------------
-    // CAR MARKER + MOVEMENT
-    // -----------------------------
-    const carIcon = L.icon({
-      iconUrl: 'https://cdn-icons-png.flaticon.com/512/854/854894.png',
-      iconSize: [35, 35]
-    });
-    const car = L.marker(route[0], { icon: carIcon }).addTo(map);
-
-    let i = 0;
-    let running = false;
-    let timer;
-
-    function moveCar() {
-      if (!running) return;
-      if (i < route.length) {
-        car.setLatLng(route[i]);
-        const nearbyLandmark = landmarks.find(l =>
-          !l.shown &&
-          Math.abs(l.coords[0] - route[i][0]) < 0.0008 &&
-          Math.abs(l.coords[1] - route[i][1]) < 0.0008
-        );
-        if (nearbyLandmark) {
-          document.getElementById("remark-box").innerText = nearbyLandmark.remark;
-          nearbyLandmark.shown = true;
-        } else {
-          document.getElementById("remark-box").innerText = "Moving to next point...";
+      // === LANDMARKS WITH TOUR NARRATION ===
+      landmarks: [
+        {
+          name: "Sultan Mosque",
+          coords: [1.30224743570944, 103.85890080056399],
+          remark: "On your left along North Bridge Road stands Sultan Mosque, the golden-domed heart of Kampong Glam’s Muslim community.",
+          audioId: "sultan_mosque"
+        },
+        {
+          name: "Raffles Hospital",
+          coords: [1.3011894561476867, 103.85727159672437],
+          remark: "On your right is Raffles Hospital, a major private hospital serving both locals and medical tourists.",
+          audioId: "raffles_hospital"
+        },
+        {
+          name: "Parkview Square",
+          coords: [1.3002869924834568, 103.85769628005421],
+          remark: "To your left is Parkview Square, an Art Deco-style office tower fondly nicknamed the ‘Gotham Building’.",
+          audioId: "parkview_square"
+        },
+        {
+          name: "Raffles Hotel",
+          coords: [1.2950178064775126, 103.85448051443812],
+          remark: "On your left you’ll see Raffles Hotel again, a grand colonial icon famous for the Singapore Sling.",
+          audioId: "raffles_hotel"
+        },
+        {
+          name: "CHIJMES",
+          coords: [1.2949752033004305, 103.85280762312037],
+          remark: "On your right is CHIJMES, a former convent school turned lifestyle complex with a beautiful chapel courtyard.",
+          audioId: "chijmes"
+        },
+        {
+          name: "St Andrew's Cathedral",
+          coords: [1.2936478786221383, 103.8519780052222],
+          remark: "On your right is St Andrew’s Cathedral, the largest Anglican cathedral in Singapore, set in a peaceful green lawn.",
+          audioId: "st_andrews_cathedral"
         }
-        i++;
-        timer = setTimeout(moveCar, 1500);
-      } else {
-        document.getElementById("remark-box").innerText = "🏁 Route completed!";
-        document.getElementById("startBtn").disabled = false;
-        document.getElementById("stopBtn").disabled = true;
-      }
-    }
+      ],
 
-    // -----------------------------
-    // BUTTON LOGIC
-    // -----------------------------
-    document.getElementById("startBtn").addEventListener("click", () => {
-      if (!running) {
-        landmarks.forEach(l => delete l.shown);
-        running = true;
-        document.getElementById("startBtn").disabled = true;
-        document.getElementById("stopBtn").disabled = false;
-        moveCar();
-      }
-    });
+      // === REAL-WORLD-STYLE TRAFFIC LIGHTS ALONG THE ROUTE ===
+      trafficLights: [
+        {
+          name: "Pahang St / Jalan Sultan Junction",
+          coords: [1.3024336140242334, 103.8617158270447],
+          cycle: { green: 25, amber: 3, red: 35 },
+          offset: 0
+        },
+        {
+          name: "Jalan Sultan / North Bridge Rd Junction",
+          coords: [1.3041510169336643, 103.86067343186431],
+          cycle: { green: 28, amber: 3, red: 40 },
+          offset: 10
+        },
+        {
+          name: "North Bridge Rd / Ophir Rd Junction",
+          coords: [1.3034545627309106, 103.85403069213372],
+          cycle: { green: 24, amber: 3, red: 36 },
+          offset: 5
+        },
+        {
+          name: "North Bridge Rd / Bugis Cluster",
+          coords: [1.2994610955417014, 103.85632745947683],
+          cycle: { green: 22, amber: 3, red: 33 },
+          offset: 15
+        },
+        {
+          name: "North Bridge Rd / Bras Basah Junction",
+          coords: [1.2952334118494924, 103.8532282923465],
+          cycle: { green: 26, amber: 3, red: 38 },
+          offset: 8
+        },
+        {
+          name: "North Bridge Rd / St Andrew’s & Coleman Junction",
+          coords: [1.2934776911869392, 103.85196398153528],
+          cycle: { green: 20, amber: 3, red: 32 },
+          offset: 12
+        }
+      ]
+    };
 
-    document.getElementById("stopBtn").addEventListener("click", () => {
-      running = false;
-      clearTimeout(timer);
-      document.getElementById("startBtn").disabled = false;
-      document.getElementById("stopBtn").disabled = true;
-      document.getElementById("remark-box").innerText = "⏹ Route paused.";
-    });
-
-    document.getElementById("prevBtn").addEventListener("click", () => {
-      if (i > 1) {
-        i -= 2;
-        car.setLatLng(route[i]);
-        const nearbyLandmark = landmarks.find(l =>
-          Math.abs(l.coords[0] - route[i][0]) < 0.0009 &&
-          Math.abs(l.coords[1] - route[i][1]) < 0.0009
-        );
-        document.getElementById("remark-box").innerText =
-          nearbyLandmark ? nearbyLandmark.remark : "Moved to previous point.";
-      } else {
-        document.getElementById("remark-box").innerText = "Already at start point.";
-      }
-    });
+    initRoute(ROUTE_CONFIG);
   </script>
 </body>
 </html>
