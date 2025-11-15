@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Route 3.1 – Civic District to Botanic Gardens</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Poppins, sans-serif;
+      background: #f0f8ff;
+      text-align: center;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin: 10px;
+      padding: 8px 14px;
+      background: #0077b6;
+      color: #fff;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 500;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .back-link:hover {
+      background-color: #005f87;
+    }
+
+    h2 {
+      margin: 4px 12px 2px;
+      font-size: 1.2em;
+    }
+
+    #map {
+      height: 55vh;
+      width: 95%;
+      border-radius: 12px;
+      margin: 5px auto;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    #remark-box {
+      font-size: 1em;
+      margin-top: 8px;
+      padding: 10px;
+      background: #fff8dc;
+      border-radius: 8px;
+      width: 90%;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      min-height: 2.4em;
+    }
+
+    .controls {
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    button {
+      padding: 8px 18px;
+      font-size: 0.95em;
+      margin: 5px 3px;
+      border: none;
+      border-radius: 6px;
+      background-color: #0077b6;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    button:hover {
+      background-color: #005f87;
+    }
+    button:disabled {
+      background-color: #a0c4ff;
+      cursor: not-allowed;
+    }
+
+    .toggle-wrapper {
+      margin-top: 6px;
+      font-size: 0.9em;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+    }
+    .toggle-wrapper input[type="checkbox"] {
+      transform: scale(1.1);
+      cursor: pointer;
+    }
+
+    /* LEGEND */
+    #legend-box {
+      position: fixed;
+      top: 20px;
+      right: 15px;
+      background: #ffffffcc;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.85em;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      text-align: left;
+      line-height: 1.4em;
+      z-index: 9999;
+    }
+    .light {
+      display: inline-block;
+      width: 11px;
+      height: 11px;
+      margin-right: 6px;
+      border-radius: 50%;
+    }
+    .light.red { background: red; }
+    .light.amber { background: orange; }
+    .light.green { background: green; }
+
+    /* PROGRESS BAR */
+    #progress-container {
+      width: 90%;
+      height: 10px;
+      background: #e0e0e0;
+      border-radius: 6px;
+      margin: 15px auto 5px;
+      overflow: hidden;
+    }
+    #progress-bar {
+      width: 0%;
+      height: 100%;
+      background: #0077b6;
+      transition: width 0.2s linear;
+    }
+    #progress-text {
+      font-size: 0.9em;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    /* TIMER */
+    #timer-box {
+      margin-top: 8px;
+      font-size: 1.1em;
+      font-weight: 600;
+      color: #023e8a;
+    }
+
+    /* SPEED CONTROL */
+    #speed-control {
+      margin-top: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9em;
+    }
+    #speedSlider {
+      width: 160px;
+    }
+    #speed-label {
+      font-weight: 600;
+      color: #024b84;
+    }
+
+    /* LOWER PANELS */
+    .bottom-panels {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      width: 95%;
+      margin: 10px auto 20px;
+    }
+
+    #narration-panel, #checkpoints-panel {
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      padding: 10px 12px;
+      font-size: 0.9em;
+      text-align: left;
+      flex: 1 1 260px;
+      max-width: 360px;
+    }
+
+    #narration-panel h3,
+    #checkpoints-panel h3 {
+      margin: 0 0 6px;
+      font-size: 1em;
+      color: #023e8a;
+    }
+
+    #current-narration,
+    #next-narration {
+      margin: 3px 0;
+    }
+
+    #checkpoints-panel ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 4px 0 0;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    #checkpoints-panel li {
+      margin-bottom: 4px;
+      font-size: 0.88em;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .checkpoint-icon {
+      font-size: 0.9em;
+      width: 18px;
+      text-align: center;
+    }
+
+    .checkpoint.done {
+      color: green;
+      text-decoration: line-through;
+    }
+
+    /* MINI-MAP */
+    #mini-map-container {
+      position: fixed;
+      bottom: 15px;
+      right: 15px;
+      width: 180px;
+      height: 130px;
+      background: #ffffffcc;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      z-index: 9998;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #mini-map-title {
+      font-size: 0.8em;
+      padding: 4px 6px;
+      background: #0077b6;
+      color: #fff;
+      text-align: left;
+    }
+    #mini-map {
+      flex: 1;
+    }
+
+    @media (min-width: 768px) {
+      h2 { font-size: 1.5em; }
+      #map { height: 60vh; width: 90%; }
+      #remark-box { font-size: 1.05em; width: 80%; }
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-link">⬅ Back to Home</a>
+
+  <h2>🚗 Singapore Route Tracker – Civic District to Botanic Gardens</h2>
+
+  <div id="map"></div>
+
+  <div id="remark-box">Start of the route...</div>
+
+  <!-- LEGEND -->
+  <div id="legend-box">
+    <strong>Traffic Lights</strong><br>
+    <span class="light red"></span> Red – Stop<br>
+    <span class="light amber"></span> Amber – Prepare to Stop<br>
+    <span class="light green"></span> Green – Moving
+  </div>
+
+  <!-- PROGRESS BAR -->
+  <div id="progress-container">
+    <div id="progress-bar"></div>
+  </div>
+  <div id="progress-text">Progress: 0%</div>
+
+  <!-- TIMER -->
+  <div id="timer-box">⏱ 00:00</div>
+
+  <!-- SPEED CONTROL -->
+  <div id="speed-control">
+    <span>Speed:</span>
+    <input type="range" id="speedSlider" min="1" max="3" step="1" value="2" />
+    <span id="speed-label">Normal</span>
+  </div>
+
+  <!-- MAIN CONTROLS -->
+  <div class="controls">
+    <button id="startBtn">▶ Start</button>
+    <button id="stopBtn" disabled>⏹ Stop</button>
+    <button id="prevBtn">⏪ Previous</button>
+    <button id="resetBtn">🔁 Reset</button>
+  </div>
+
+  <div class="toggle-wrapper">
+    <label for="voiceToggle">🔊 Voice narration</label>
+    <input type="checkbox" id="voiceToggle" checked />
+  </div>
+
+  <!-- PANELS -->
+  <div class="bottom-panels">
+    <div id="narration-panel">
+      <h3>Auto-Narration</h3>
+      <div id="current-narration"><strong>Current:</strong> None yet — starting soon.</div>
+      <div id="next-narration"><strong>Next:</strong> Peninsula Excelsior & Civic District</div>
+    </div>
+
+    <div id="checkpoints-panel">
+      <h3>Milestone Checkpoints</h3>
+      <ul id="checkpoint-list"></ul>
+    </div>
+  </div>
+
+  <!-- MINI MAP -->
+  <div id="mini-map-container">
+    <div id="mini-map-title">Mini Overview</div>
+    <div id="mini-map"></div>
+  </div>
+
+  <audio id="narrationPlayer"></audio>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="js/engine.js"></script>
+  <script>
+    const ROUTE_CONFIG = {
+      heading: "🚗 Singapore Route Tracker – Civic District to Botanic Gardens",
+      initialView: { lat: 1.301, lng: 103.836, zoom: 14 },
+      audioBasePath: "audio/",
+
+      // Coleman St → Hill St → Stamford Rd → Penang Rd → Somerset Rd
+      // → Grange Rd → Orchard Boulevard → Grange Rd → Napier Rd
+      // → Holland Rd → Tyersall Ave → Tyersall Gate (SBG Coach Bay)
+      route: [
+        [1.2928, 103.8490], // Peninsula Excelsior / Coleman St
+        [1.2930, 103.8493], // Coleman St towards Hill
+        [1.2932, 103.8495], // Coleman / Hill junction
+        [1.2938, 103.8498], // Hill St
+        [1.2946, 103.8502], // Hill St
+        [1.2953, 103.8503], // Hill St near Stamford
+        [1.2959, 103.8501], // Stamford Rd 1
+        [1.2966, 103.8496], // Stamford Rd 2
+        [1.2974, 103.8491], // Stamford Rd 3 – near National Museum
+        [1.2982, 103.8485], // Stamford Rd 4
+
+        [1.2990, 103.8479], // Penang Rd 1
+        [1.2998, 103.8472], // Penang Rd 2
+        [1.3003, 103.8465], // Penang Rd 3 – Dhoby Ghaut / Plaza Singapura
+
+        [1.3008, 103.8454], // Somerset Rd 1
+        [1.3011, 103.8445], // Somerset Rd 2
+        [1.3014, 103.8438], // Somerset Rd near Istana Gate
+
+        [1.3010, 103.8428], // Left into Grange Rd 1
+        [1.3007, 103.8418], // Grange Rd 2
+        [1.3005, 103.8408], // Grange Rd 3
+
+        [1.3012, 103.8399], // Grange / Orchard area
+        [1.3020, 103.8387], // Towards Orchard Boulevard
+        [1.3028, 103.8375], // Orchard Boulevard 1
+        [1.3036, 103.8363], // Orchard Boulevard 2
+        [1.3042, 103.8350], // Orchard Boulevard 3
+        [1.3048, 103.8337], // Orchard Boulevard 4
+
+        [1.3052, 103.8325], // Right into Grange Rd (towards Napier)
+        [1.3054, 103.8310], // Grange Rd 2
+        [1.3052, 103.8288], // Grange Rd 3 / towards Napier
+        [1.3049, 103.8268], // Napier Rd 1
+        [1.3052, 103.8246], // Napier Rd 2 – embassies & Botanic
+        [1.3058, 103.8226], // Napier / Holland junction area
+        [1.3066, 103.8208], // Holland Rd 1
+        [1.3074, 103.8192], // Holland Rd 2
+        [1.3077, 103.8184], // Towards Tyersall Ave
+        [1.3075, 103.8176], // Tyersall Ave 1
+        [1.3074, 103.8168], // Tyersall Ave 2
+        [1.3074, 103.8162]  // Tyersall Gate Coach Bay – SBG
+      ],
+
+      landmarks: [
+        {
+          name: "Peninsula Excelsior & Civic District Start",
+          coords: [1.2928, 103.8490],
+          remark: "We begin at Peninsula Excelsior Hotel in the Civic District, close to the Singapore River and historic government buildings.",
+          audioId: "peninsula_excelsior_start"
+        },
+        {
+          name: "Central Fire Station & Old Hill Street",
+          coords: [1.2938, 103.8498],
+          remark: "On Hill Street you pass the historic Central Fire Station and colourful Old Hill Street Police Station nearby.",
+          audioId: "central_fire_station_hill"
+        },
+        {
+          name: "National Museum of Singapore",
+          coords: [1.2974, 103.8491],
+          remark: "On Stamford Road stands the National Museum of Singapore, the country’s oldest museum with a beautiful neoclassical façade.",
+          audioId: "national_museum"
+        },
+        {
+          name: "Dhoby Ghaut & Plaza Singapura",
+          coords: [1.3003, 103.8465],
+          remark: "Ahead is Dhoby Ghaut, a major transport hub, and Plaza Singapura, one of the earliest large shopping malls in Singapore.",
+          audioId: "dhoby_ghaut_plaza_singapura"
+        },
+        {
+          name: "The Istana Main Gate",
+          coords: [1.3014, 103.8438],
+          remark: "On your right is the main gate of The Istana, the official residence and office of the President of Singapore.",
+          audioId: "istana_gate"
+        },
+        {
+          name: "Somerset & Orchard Shopping Belt",
+          coords: [1.3005, 103.8408],
+          remark: "You are entering the Somerset stretch of Orchard Road, lined with shopping malls, hotels and entertainment spots.",
+          audioId: "somerset_orchard"
+        },
+        {
+          name: "Orchard Boulevard & Embassy Row",
+          coords: [1.3042, 103.8350],
+          remark: "Along Orchard Boulevard, this area transitions from shopping belt to embassy and residential district.",
+          audioId: "orchard_boulevard_embassy_row"
+        },
+        {
+          name: "Napier Road – Embassies & Botanic Gardens",
+          coords: [1.3052, 103.8246],
+          remark: "Napier Road is home to several embassies and forms one of the main approaches to the Singapore Botanic Gardens.",
+          audioId: "napier_road_approach"
+        },
+        {
+          name: "Gleneagles Hospital",
+          coords: [1.3058, 103.8226],
+          remark: "On your right is Gleneagles Hospital, set right beside the greenery of the Botanic Gardens.",
+          audioId: "gleneagles_hospital"
+        },
+        {
+          name: "Singapore Botanic Gardens – Tyersall Gate",
+          coords: [1.3074, 103.8162],
+          remark: "We arrive at the Tyersall Gate coach bay of the Singapore Botanic Gardens, a UNESCO World Heritage Site and a favourite green escape for locals.",
+          audioId: "sbg_tyersall_gate"
+        }
+      ],
+
+      trafficLights: [
+        {
+          name: "Coleman St / Hill St Junction",
+          coords: [1.2932, 103.8495],
+          cycle: { green: 25, amber: 3, red: 35 },
+          offset: 0
+        },
+        {
+          name: "Hill St / Stamford Rd Junction",
+          coords: [1.2953, 103.8503],
+          cycle: { green: 24, amber: 3, red: 36 },
+          offset: 8
+        },
+        {
+          name: "Stamford Rd / Penang Rd Junction",
+          coords: [1.2990, 103.8479],
+          cycle: { green: 22, amber: 3, red: 33 },
+          offset: 15
+        },
+        {
+          name: "Somerset Rd / Istana Area Lights",
+          coords: [1.3014, 103.8438],
+          cycle: { green: 26, amber: 3, red: 38 },
+          offset: 5
+        },
+        {
+          name: "Orchard Boulevard / Grange Rd Junction",
+          coords: [1.3028, 103.8375],
+          cycle: { green: 20, amber: 3, red: 32 },
+          offset: 12
+        },
+        {
+          name: "Napier / Holland Rd Junction",
+          coords: [1.3066, 103.8208],
+          cycle: { green: 21, amber: 3, red: 34 },
+          offset: 18
+        },
+        {
+          name: "Holland Rd / Tyersall Ave Junction",
+          coords: [1.3077, 103.8184],
+          cycle: { green: 20, amber: 3, red: 30 },
+          offset: 7
+        }
+      ]
+    };
+
+    initRoute(ROUTE_CONFIG);
+  </script>
+</body>
+</html>
